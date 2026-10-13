@@ -138,3 +138,21 @@ export async function repLoadMyStudents(userId, all) {
   const { data } = await q; return data || []
 }
 export async function clearMustChange(userId) { await supabase.from('profiles').update({ must_change_password: false }).eq('id', userId) }
+
+// ---------- watch progress ----------
+export async function loadWatch(userId, moduleId) {
+  const { data } = await supabase.from('watch_progress').select('seconds,duration').eq('profile_id', userId).eq('module_id', moduleId).maybeSingle()
+  return data || { seconds: 0, duration: 0 }
+}
+export async function saveWatch(userId, moduleId, seconds, duration) {
+  const { data } = await supabase.from('watch_progress').select('seconds').eq('profile_id', userId).eq('module_id', moduleId).maybeSingle()
+  if (data) await supabase.from('watch_progress').update({ seconds, duration, updated_at: new Date().toISOString() }).eq('profile_id', userId).eq('module_id', moduleId)
+  else await supabase.from('watch_progress').insert({ profile_id: userId, module_id: moduleId, seconds, duration })
+}
+// a module is locked until every earlier core module is complete (bonus modules stay open)
+export function isLocked(mods, prog, m) {
+  if (m.group_key !== 'core') return false
+  const core = mods.filter(x => x.group_key === 'core')
+  const i = core.findIndex(x => x.id === m.id)
+  return core.slice(0, i).some(x => !prog[x.id])
+}

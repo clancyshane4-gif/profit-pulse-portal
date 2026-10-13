@@ -39,7 +39,7 @@ const db = {
   profiles: PEOPLE.map(([id, name, city, lat, lng, role], i) => ({ id, email: `${name.split(' ')[0].toLowerCase()}@example.com`, name, city, lat, lng, discord: name.split(' ')[0].toLowerCase() + '_ai', photo_url: '', q1: 'Sign my first two retainer clients and replace my day job income.', q2: 'Ran ads for a friend\'s gym once. Never sold anything over the phone.', onboarded: i !== 0, role: role || 'student', active: true, must_change_password: false, added_by: 's1', created_at: new Date(Date.now() - i * 864e5 * 3).toISOString() })),
   modules: SEED_MODULES, achievements: ACH,
   settings: Object.entries(SETTINGS).map(([key, value]) => ({ key, value })),
-  lesson_progress: [], submissions: [], activity_days: [],
+  lesson_progress: [], submissions: [], activity_days: [], watch_progress: [],
 }
 // example progress for other members so the leaderboard has shape
 PEOPLE.slice(1).forEach(([id], i) => {
