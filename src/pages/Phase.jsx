@@ -14,9 +14,14 @@ export default function Phase() {
   const phase = phases.find(p => p.id === id)
   const lessons = mods.filter(m => m.phase_id === id)
   const allCore = phases.filter(p => p.group_key === 'core').flatMap(p => mods.filter(m => m.phase_id === p.id))
-  const lockedLesson = m => { if (isAdmin || phase?.group_key !== 'core') return false; const i = allCore.findIndex(x => x.id === m.id); return allCore.slice(0, i).some(x => !prog[x.id]) }
-  const curId = sp.get('l') || lessons.find(m => !prog[m.id])?.id || lessons[0]?.id
-  const cur = lessons.find(m => m.id === curId)
+  const corePhases = phases.filter(p => p.group_key === 'core')
+  const phaseDone = p => { const ls = mods.filter(m => m.phase_id === p.id); return ls.length > 0 && ls.every(m => prog[m.id]) }
+  const phaseLocked = phase && !isAdmin && (phase.group_key !== 'core' ? (corePhases.length ? !phaseDone(corePhases[0]) : false) : corePhases.slice(0, corePhases.indexOf(phase)).some(q => !phaseDone(q)))
+  const lockedLesson = m => { if (isAdmin) return false; const list = phase?.group_key === 'core' ? allCore : lessons; const i = list.findIndex(x => x.id === m.id); return list.slice(0, i).some(x => !prog[x.id]) }
+  useEffect(() => { if (phase && mods.length && phaseLocked) nav('/courses', { replace: true }) }, [phase?.id, mods.length, phaseLocked])
+  const firstOpen = lessons.find(m => !prog[m.id])?.id || lessons[0]?.id
+  const wanted = lessons.find(m => m.id === sp.get('l'))
+  const cur = wanted && !lockedLesson(wanted) ? wanted : lessons.find(m => m.id === firstOpen)
   if (!phase || !cur) return <section className="page"><div className="skel" style={{ height: 40, width: 220, marginBottom: 16 }} /><div className="course-layout"><div className="skel" style={{ height: 420 }} /><div className="skel" style={{ height: 420 }} /></div></section>
   const done = lessons.filter(m => prog[m.id]).length
   const onDone = mid => { setProg(p => ({ ...p, [mid]: new Date().toISOString() })) }
@@ -36,7 +41,7 @@ export default function Phase() {
         <div className="card" style={{ padding: 10 }}><div className="note" style={{ padding: '6px 12px 10px', fontWeight: 700 }}>Lessons</div>
           <div className="lesson-list">{lessons.map((m, i) => { const lk = lockedLesson(m); return (
             <button key={m.id} className={`lesson ${prog[m.id] ? 'done' : ''} ${m.id === cur.id ? 'on' : ''}`} style={{ opacity: lk ? .45 : 1, cursor: lk ? 'not-allowed' : 'pointer' }} onClick={() => select(m)}>
-              <span className="n">{prog[m.id] ? '✓' : lk ? '🔒' : i + 1}</span><span className="t"><b>{m.title}</b><small>{m.points} pts · {m.kind === 'quiz' ? `quiz · ${(m.quiz || []).length} questions` : `${m.minutes} min`}</small></span></button>) })}</div></div>
+              <span className="n">{prog[m.id] ? '✓' : lk ? '🔒' : i + 1}</span><span className="t"><b>{lk ? `Lesson ${i + 1}` : m.title}</b><small>{lk ? 'Locked until the previous lesson is complete' : `${m.points} pts · ${m.kind === 'quiz' ? `quiz · ${(m.quiz || []).length} questions` : `${m.minutes} min`}`}</small></span></button>) })}</div></div>
         {cur.kind === 'quiz'
           ? <Quiz key={cur.id} m={cur} done={!!prog[cur.id]} attempt={quiz[cur.id]} onDone={onDone} next={next} nextPhase={nextPhase} select={select} />
           : <Lesson key={cur.id} m={cur} done={!!prog[cur.id]} onDone={onDone} next={next} nextPhase={nextPhase} select={select} locked={lockedLesson(cur)} lessons={lessons} />}

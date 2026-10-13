@@ -352,3 +352,10 @@ label.f{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .lb-pop{position:absolute;right:16px;top:calc(100% - 8px);width:320px;padding:14px;border-radius:16px;border:1px solid var(--line-2);background:#0d1322;box-shadow:var(--shadow);z-index:20;cursor:default;animation:rise .2s ease}
 .res a{background:linear-gradient(160deg,color-mix(in srgb,var(--c) 9%,transparent),var(--glass) 70%)}
 @media (max-width:760px){.phases{grid-template-columns:1fr}.cal-head,.cal-body{grid-template-columns:44px repeat(7,minmax(0,1fr))}.cal-hours span{right:4px;font-size:9px}.cal-pop{position:fixed;left:16px;right:16px;top:auto;bottom:16px;width:auto}.cal-col:nth-child(n+6) .cal-pop{left:16px;right:16px}.lb-pop{right:8px;width:calc(100% - 16px)}.orbs{grid-auto-flow:row;grid-template-columns:repeat(4,1fr);gap:14px}.orb-line,.orb-fill{display:none}.rec{flex-wrap:wrap}}
+
+.phase.locked{opacity:.85;cursor:not-allowed;filter:saturate(.4)}
+.phase.locked .pic{opacity:.6;box-shadow:none}
+.phase.locked h3{color:var(--muted)}
+.locked-body{display:flex;flex-direction:column;gap:14px;flex:1}
+.blur-lines{display:flex;flex-direction:column;gap:8px;filter:blur(3px);opacity:.5}
+.blur-lines i{display:block;height:10px;border-radius:6px;background:rgba(255,255,255,.12);width:90%}
