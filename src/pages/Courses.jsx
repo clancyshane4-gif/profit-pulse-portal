@@ -1,36 +1,35 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../App'
-import { loadModules, loadMyProgress, isLocked } from '../lib/data'
+import { loadModules, loadMyProgress, loadPhases } from '../lib/data'
+import Icon from '../components/Icon'
 
 export default function Courses() {
   const { user, isAdmin } = useApp(); const nav = useNavigate()
-  const [mods, setMods] = useState(null); const [prog, setProg] = useState({})
-  useEffect(() => { loadModules().then(setMods); loadMyProgress(user.id).then(setProg) }, [user.id])
-  if (!mods) return <section className="page"><div className="skel" style={{ height: 60, marginBottom: 20 }} /><div className="mods">{[0, 1, 2].map(i => <div key={i} className="skel" style={{ height: 300 }} />)}</div></section>
+  const [phases, setPhases] = useState(null); const [mods, setMods] = useState([]); const [prog, setProg] = useState({})
+  useEffect(() => { loadPhases().then(setPhases); loadModules().then(setMods); loadMyProgress(user.id).then(setProg) }, [user.id])
+  if (!phases) return <section className="page"><div className="skel" style={{ height: 60, marginBottom: 20 }} /><div className="phases">{[0, 1, 2, 3].map(i => <div key={i} className="skel" style={{ height: 220 }} />)}</div></section>
+  const lessonsOf = p => mods.filter(m => m.phase_id === p.id)
+  const quizzes = mods.filter(m => m.kind === 'quiz').length
+  // a core phase is locked until every lesson in earlier core phases is done
+  const core = phases.filter(p => p.group_key === 'core')
+  const lockedPhase = p => { if (isAdmin || p.group_key !== 'core') return false; const i = core.indexOf(p); return core.slice(0, i).some(q => lessonsOf(q).some(m => !prog[m.id])) }
   const done = Object.keys(prog).length
-  const groups = [['core', 'Bootcamp', `${mods.filter(m => m.group_key === 'core').length} modules in the order you'll use them`], ['bonus', 'Exclusive bonus', 'Student case studies and the full live masterclass']]
-  const nextId = mods.find(m => !prog[m.id])?.id
-  const Card = ({ m, first }) => { const lk = !isAdmin && isLocked(mods, prog, m); return (
-    <div className={`mod ${first ? 'first' : ''} ${lk ? 'locked' : ''}`} role="button" tabIndex={0} onClick={() => nav(`/courses/${m.id}`)} onKeyDown={e => e.key === 'Enter' && nav(`/courses/${m.id}`)}>
-      <div className="cover">{m.cover_url ? <img src={m.cover_url} alt="" /> : <span className="letter">{m.title[0]}</span>}
-        <i className="dur">{m.minutes} min</i>
-        {first && !prog[m.id] && <span className="pill tag">Up next</span>}
-        {lk && <div className="done lock"><i>🔒</i></div>}
-        {!m.video_url && !m.external_url && <span className="pill grey tag">Coming soon</span>}
-        {prog[m.id] && <div className="done"><i>✓</i></div>}
+  const Card = ({ p }) => { const ls = lessonsOf(p); const d = ls.filter(m => prog[m.id]).length; const pct = ls.length ? Math.round(d / ls.length * 100) : 0; const lk = lockedPhase(p); return (
+    <div className={`phase ${lk ? 'locked' : ''}`} style={{ '--c': p.color }} role="button" tabIndex={0} onClick={() => !lk && nav(`/courses/${p.id}`)} onKeyDown={e => e.key === 'Enter' && !lk && nav(`/courses/${p.id}`)}>
+      <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
+        <div className="pic"><Icon name={lk ? 'lock' : p.icon} size={26} color={p.color} /></div>
+        <div style={{ minWidth: 0 }}><div className="ph" style={{ color: p.color }}>{p.group_key === 'bonus' ? 'Bonus' : `Phase ${p.sort}`}</div><h3>{p.title}</h3></div>
       </div>
-      <div className="body"><div className="ph">{m.phase}</div><h3>{m.title}</h3><p>{m.description}</p>
-        <div className="foot"><span className="num" style={{ color: prog[m.id] ? 'var(--green)' : undefined }}>{prog[m.id] ? 'Completed' : lk ? 'Locked' : `+${m.points} pts`}</span>{first && !prog[m.id] && <span className="btn primary sm" style={{ marginLeft: 'auto' }}>Start module</span>}</div></div>
-    </div>
-  ) }
+      <p>{p.description}</p>
+      <div className="row spread" style={{ fontSize: 12.5, color: 'var(--muted)' }}><span className="num">{d} / {ls.length} lessons{ls.some(m => m.kind === 'quiz') ? ' · quiz' : ''}</span><span className="num">{lk ? 'Locked' : pct + '%'}</span></div>
+      <div className="bar thin"><i style={{ width: pct + '%', background: p.color, boxShadow: `0 0 12px ${p.color}` }} /></div>
+    </div>) }
   return (
     <section className="page">
-      <div className="head"><div><h1>Courses</h1><p>Modules unlock in order. Watch at least half of each video to mark it complete and open the next one.</p></div><span className="pill">{done} / {mods.length} complete</span></div>
-      {groups.map(([g, title, sub]) => <div key={g}>
-        <div className="phase-head"><h2>{title}</h2><span>{sub}</span></div>
-        <div className="mods">{mods.filter(m => m.group_key === g).map(m => <Card key={m.id} m={m} first={m.id === nextId} />)}</div>
-      </div>)}
+      <div className="head"><div><h1>Courses</h1><p>Complete lessons to earn points{quizzes ? '. Quizzes available for bonus points' : ''}. Phases unlock in order.</p></div><span className="pill">{done} / {mods.length} lessons</span></div>
+      <div className="phases">{phases.filter(p => p.group_key === 'core').map(p => <Card key={p.id} p={p} />)}</div>
+      {phases.some(p => p.group_key === 'bonus') && <><div className="phase-head"><h2>Exclusive bonus</h2><span>open from day one</span></div><div className="phases">{phases.filter(p => p.group_key === 'bonus').map(p => <Card key={p.id} p={p} />)}</div></>}
     </section>
   )
 }

@@ -68,7 +68,7 @@ export default function Dashboard() {
           <div className="row spread"><b>Course progress</b><span className="pill">{pct}%</span></div>
           <div className="row" style={{ marginTop: 16, gap: 18 }}>
             <svg className="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.07)" strokeWidth="9" /><circle cx="50" cy="50" r="42" fill="none" stroke="#22e36b" strokeWidth="9" strokeLinecap="round" strokeDasharray="264" strokeDashoffset={264 - 264 * pct / 100} transform="rotate(-90 50 50)" style={{ filter: 'drop-shadow(0 0 6px rgba(34,227,107,.6))', transition: 'stroke-dashoffset .8s ease' }} /><text x="50" y="56" textAnchor="middle" fill="#eef1f8" fontSize="20" fontWeight="800" fontFamily="Bricolage Grotesque, sans-serif">{done}</text></svg>
-            <div style={{ minWidth: 0 }}>{nextMod ? <><div className="note">Up next</div><b style={{ display: 'block', fontSize: 15, margin: '2px 0 10px' }}>{nextMod.title}</b><Link className="btn primary sm" to={`/courses/${nextMod.id}`}>Continue</Link></> : <><b>All modules complete.</b><div className="note">Keep earning through achievements.</div></>}</div>
+            <div style={{ minWidth: 0 }}>{nextMod ? <><div className="note">Up next</div><b style={{ display: 'block', fontSize: 15, margin: '2px 0 10px' }}>{nextMod.title}</b><Link className="btn primary sm" to={`/courses/${nextMod.phase_id || ''}?l=${nextMod.id}`}>Continue</Link></> : <><b>All modules complete.</b><div className="note">Keep earning through achievements.</div></>}</div>
           </div>
         </div>
         <div className="card span7">

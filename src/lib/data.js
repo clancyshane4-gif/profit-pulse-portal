@@ -156,3 +156,56 @@ export function isLocked(mods, prog, m) {
   const i = core.findIndex(x => x.id === m.id)
   return core.slice(0, i).some(x => !prog[x.id])
 }
+
+// ---------- phases / quizzes ----------
+export async function loadPhases() { const { data } = await supabase.from('phases').select('*').order('sort'); return data || [] }
+export async function loadMyQuizAttempts(userId) {
+  const { data } = await supabase.from('quiz_attempts').select('module_id,score_pct,passed,created_at').eq('profile_id', userId).order('created_at', { ascending: false })
+  const m = {}; (data || []).forEach(r => { if (!m[r.module_id] || r.passed) m[r.module_id] = r }); return m
+}
+export async function recordQuizAttempt(userId, moduleId, scorePct, passed) {
+  await supabase.from('quiz_attempts').insert({ profile_id: userId, module_id: moduleId, score_pct: scorePct, passed })
+}
+
+// ---------- calendar ----------
+export async function loadEvents() { const { data } = await supabase.from('events').select('*').eq('active', true).order('sort'); return data || [] }
+export async function adminSaveEvent(ev) {
+  const { id, ...rest } = ev
+  if (id) { const { error } = await supabase.from('events').update(rest).eq('id', id); if (error) throw error }
+  else { const { error } = await supabase.from('events').insert(rest); if (error) throw error }
+}
+export async function adminDeleteEvent(id) { await supabase.from('events').delete().eq('id', id) }
+
+// ---------- recordings ----------
+export async function loadRecordings() { const { data } = await supabase.from('recordings').select('*').order('held_on', { ascending: false }); return data || [] }
+export async function loadMyWatches(userId) { const { data } = await supabase.from('recording_watches').select('recording_id').eq('profile_id', userId); return new Set((data || []).map(r => r.recording_id)) }
+export async function setWatched(userId, recId, on) {
+  if (on) { await supabase.from('recording_watches').insert({ profile_id: userId, recording_id: recId }); await bumpActivity(userId, 0) }
+  else await supabase.from('recording_watches').delete().eq('profile_id', userId).eq('recording_id', recId)
+}
+export async function adminSaveRecording(rec) {
+  const { id, ...rest } = rec
+  if (id) { const { error } = await supabase.from('recordings').update(rest).eq('id', id); if (error) throw error }
+  else { const { error } = await supabase.from('recordings').insert(rest); if (error) throw error }
+}
+export async function adminDeleteRecording(id) { await supabase.from('recordings').delete().eq('id', id) }
+
+// ---------- leaderboard extras ----------
+export async function loadLeaderboardSince(sinceIso) {
+  if (DEMO) return loadLeaderboard()
+  const { data } = await supabase.rpc('leaderboard_since', { since: sinceIso })
+  return (data || []).sort((a, b) => b.points - a.points)
+}
+export async function loadBreakdown(profileId) {
+  const [{ data: lp }, { data: sb }, { data: ad }, mods, ach] = await Promise.all([
+    supabase.from('lesson_progress').select('module_id,completed_at').eq('profile_id', profileId),
+    supabase.from('submissions').select('achievement_key,reviewed_at,created_at').eq('profile_id', profileId).eq('status', 'approved'),
+    supabase.from('activity_days').select('day').eq('profile_id', profileId),
+    loadModules(), loadAchievements()])
+  const items = []
+  ;(sb || []).forEach(s => { const a = ach.find(x => x.key === s.achievement_key); if (a) items.push({ t: a.title, k: a.category === 'revenue' ? 'Results' : 'Implementation', p: a.points, at: s.reviewed_at || s.created_at }) })
+  ;(lp || []).forEach(l => { const m = mods.find(x => x.id === l.module_id); if (m) items.push({ t: m.title, k: 'Course', p: m.points, at: l.completed_at }) })
+  const days = (ad || []).length; if (days) items.push({ t: 'Daily activity', k: `${days} active days`, p: days * 3, at: null })
+  items.sort((a, b) => b.p - a.p)
+  return items
+}

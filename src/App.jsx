@@ -8,7 +8,8 @@ import SetPassword from './pages/SetPassword'
 import OnboardingGate from './pages/OnboardingGate'
 import Dashboard from './pages/Dashboard'
 import Courses from './pages/Courses'
-import Module from './pages/Module'
+import Phase from './pages/Phase'
+import Recordings from './pages/Recordings'
 import Leaderboard from './pages/Leaderboard'
 import Challenge from './pages/Challenge'
 import MemberMap from './pages/MemberMap'
@@ -73,7 +74,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:id" element={<Module />} />
+          <Route path="/courses/:id" element={<Phase />} />
+          <Route path="/recordings" element={<Recordings />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/challenge" element={<Challenge />} />
           <Route path="/map" element={<MemberMap />} />
