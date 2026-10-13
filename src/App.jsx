@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import { loadMyProfile, loadSettings } from './lib/data'
 import Shell from './components/Shell'
+import Announcement from './components/Announcement'
 import Login from './pages/Login'
 import SetPassword from './pages/SetPassword'
 import OnboardingGate from './pages/OnboardingGate'
@@ -70,6 +71,7 @@ export default function App() {
   return (
     <Ctx.Provider value={ctx}>
       {!profile.onboarded && <OnboardingGate />}
+      {profile.onboarded && <Announcement />}
       <Shell>
         <Routes>
           <Route path="/" element={<Dashboard />} />

@@ -209,3 +209,15 @@ export async function loadBreakdown(profileId) {
   items.sort((a, b) => b.p - a.p)
   return items
 }
+
+// ---------- announcements ----------
+export async function loadAnnouncements(all) {
+  let q = supabase.from('announcements').select('*').order('created_at', { ascending: false }); if (!all) q = q.eq('active', true)
+  const { data } = await q; return data || []
+}
+export async function adminSaveAnnouncement(a) {
+  const { id, ...rest } = a
+  if (id) { const { error } = await supabase.from('announcements').update(rest).eq('id', id); if (error) throw error }
+  else { const { error } = await supabase.from('announcements').insert(rest); if (error) throw error }
+}
+export async function adminDeleteAnnouncement(id) { await supabase.from('announcements').delete().eq('id', id) }

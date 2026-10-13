@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, adminReview, adminUpdateProfile, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, adminReview, adminUpdateProfile, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -9,12 +9,13 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
       {tab === 'modules' && <Modules />}
       {tab === 'calls' && <Calls />}
       {tab === 'recordings' && <RecordingsAdmin />}
+      {tab === 'announce' && <Announcements />}
     </section>
   )
 }
@@ -106,6 +107,27 @@ function Modules() {
           <div className="row" style={{ gap: 6, flexDirection: 'column' }}><button className="btn sm primary" onClick={() => save(m)}>Save</button><button className="btn sm" onClick={() => remove(m)}>Remove</button></div></div>) })}
       </div>)}
       <div className="note">{msg}</div>
+    </div>
+  )
+}
+
+function Announcements() {
+  const [list, setList] = useState([]); const [edit, setEdit] = useState(null); const [msg, setMsg] = useState('')
+  const load = () => loadAnnouncements(true).then(setList); useEffect(() => { load() }, [])
+  const blank = { title: '', body: '', link_url: '', link_label: 'Join here', active: true }
+  async function save(e) { e.preventDefault(); try { await adminSaveAnnouncement(edit); setEdit(null); load(); setMsg('Posted. Students see it the next time they open the portal.'); setTimeout(() => setMsg(''), 3000) } catch (ex) { setMsg(ex.message) } }
+  return (
+    <div className="card"><div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><div><b>Announcements</b><div className="note">The newest active one pops up in the corner for every student until they dismiss it.</div></div><button className="btn sm primary" onClick={() => setEdit(blank)}>+ New announcement</button></div>
+      {edit && <form onSubmit={save} className="list" style={{ marginTop: 14 }}>
+        <div><label className="f">Title</label><input type="text" value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} placeholder="LIVE CLASS @ 7pm ET Wednesday 10/15" required /></div>
+        <div><label className="f">Message</label><textarea value={edit.body} onChange={e => setEdit({ ...edit, body: e.target.value })} placeholder="Join the Lead Gen call with Coach Adriel. Link below." /></div>
+        <div className="grid g2" style={{ gap: 8 }}><div><label className="f">Link (optional)</label><input type="text" value={edit.link_url} onChange={e => setEdit({ ...edit, link_url: e.target.value })} placeholder="https://zoom.us/..." /></div><div><label className="f">Button text</label><input type="text" value={edit.link_label} onChange={e => setEdit({ ...edit, link_label: e.target.value })} /></div></div>
+        <div className="row" style={{ gap: 8 }}><button className="btn primary">{edit.id ? 'Save' : 'Post announcement'}</button><button type="button" className="btn" onClick={() => setEdit(null)}>Cancel</button></div>
+      </form>}
+      {list.map(a => <div key={a.id} className="coachrow" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }}><div><b>{a.title}</b> <span className="note">· {new Date(a.created_at).toLocaleDateString()}{a.active ? '' : ' · hidden'}</span><div className="note" style={{ whiteSpace: 'pre-wrap' }}>{a.body}</div></div>
+        <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setEdit(a)}>Edit</button><button className="btn sm" onClick={async () => { await adminSaveAnnouncement({ ...a, active: !a.active }); load() }}>{a.active ? 'Hide' : 'Show'}</button><button className="btn sm" onClick={async () => { await adminDeleteAnnouncement(a.id); load() }}>Delete</button></div></div>)}
+      {!list.length && <div className="note" style={{ padding: '10px 0' }}>Nothing posted yet.</div>}
+      <div className="note" style={{ marginTop: 8 }}>{msg}</div>
     </div>
   )
 }
