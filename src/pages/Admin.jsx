@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, adminReview, adminUpdateProfile, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, adminReview, adminUpdateProfile, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -9,13 +9,14 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
       {tab === 'modules' && <Modules />}
       {tab === 'calls' && <Calls />}
       {tab === 'recordings' && <RecordingsAdmin />}
       {tab === 'announce' && <Announcements />}
+      {tab === 'auto' && <Automations />}
     </section>
   )
 }
@@ -107,6 +108,23 @@ function Modules() {
           <div className="row" style={{ gap: 6, flexDirection: 'column' }}><button className="btn sm primary" onClick={() => save(m)}>Save</button><button className="btn sm" onClick={() => remove(m)}>Remove</button></div></div>) })}
       </div>)}
       <div className="note">{msg}</div>
+    </div>
+  )
+}
+
+function Automations() {
+  const [res, setRes] = useState(null); const [busy, setBusy] = useState(false)
+  async function run(dry) { setBusy(true); setRes(await adminRunDigest(dry)); setBusy(false) }
+  return (
+    <div className="card"><b>Daily automations</b>
+      <div className="note" style={{ margin: '4px 0 14px' }}>Runs every day at 6 PM ET. Each piece switches on when its key is set in Netlify → Environment variables.</div>
+      <div className="list" style={{ gap: 12 }}>
+        <div><b style={{ fontSize: 14 }}>Discord: top 10 + today's wins</b><div className="note">Needs <code>DISCORD_WEBHOOK_URL</code> (Discord → channel settings → Integrations → Webhooks → New webhook → copy URL).</div></div>
+        <div><b style={{ fontSize: 14 }}>Streak reminders by email</b><div className="note">Emails anyone with a 3+ day streak who hasn't earned points today. Needs <code>RESEND_API_KEY</code> and <code>EMAIL_FROM</code> (a sender on a domain you've verified at resend.com).</div></div>
+        <div><b style={{ fontSize: 14 }}>Discord role when Phase 1 is done</b><div className="note">Needs a bot in the server with Manage Roles: <code>DISCORD_BOT_TOKEN</code>, <code>DISCORD_GUILD_ID</code>, <code>DISCORD_PHASE1_ROLE_ID</code>. Matches students by the Discord username they entered at onboarding.</div></div>
+      </div>
+      <div className="row" style={{ gap: 8, marginTop: 16, flexWrap: 'wrap' }}><button className="btn sm" disabled={busy} onClick={() => run(true)}>Preview (dry run)</button><button className="btn sm primary" disabled={busy} onClick={() => run(false)}>Run now</button></div>
+      {res && <pre style={{ marginTop: 12, fontSize: 12, background: 'rgba(0,0,0,.3)', padding: 12, borderRadius: 10, whiteSpace: 'pre-wrap' }}>{JSON.stringify(res, null, 2)}</pre>}
     </div>
   )
 }

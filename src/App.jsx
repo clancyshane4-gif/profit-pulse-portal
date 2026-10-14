@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import Courses from './pages/Courses'
 import Phase from './pages/Phase'
 import Recordings from './pages/Recordings'
+import Certificate from './pages/Certificate'
 import Leaderboard from './pages/Leaderboard'
 import Challenge from './pages/Challenge'
 import MemberMap from './pages/MemberMap'
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<Phase />} />
           <Route path="/recordings" element={<Recordings />} />
+          <Route path="/certificate" element={<Certificate />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/challenge" element={<Challenge />} />
           <Route path="/map" element={<MemberMap />} />

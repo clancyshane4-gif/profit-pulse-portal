@@ -368,3 +368,11 @@ label.f{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .ann-title{display:block;font-family:var(--display);font-size:18px;font-weight:800;line-height:1.15;margin-bottom:6px;padding-right:20px}
 .ann-body{margin:0;color:var(--muted);font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
 .ann-body.open{display:block;-webkit-line-clamp:unset}
+
+/* ---------- wins feed ---------- */
+.wins-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.win{display:flex;gap:10px;align-items:center;flex:0 0 auto;min-width:230px;max-width:280px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--glass-2);font-size:13px}
+.win b{font-weight:700}
+.win.big{border-color:rgba(245,198,82,.4);background:linear-gradient(160deg,rgba(245,198,82,.14),var(--glass-2))}
+.win .note{font-size:11.5px}
+code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:5px}

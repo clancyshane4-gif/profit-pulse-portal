@@ -6,7 +6,7 @@ React + Vite frontend, Supabase (auth, Postgres, storage), hosted on Netlify. Ad
 
 ### 1. Supabase
 1. Create a project at supabase.com (free tier is fine to start).
-2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` and `supabase/migration-3-announcements.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
+2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql` and `supabase/migration-4-wins.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
 3. Authentication → Providers → Email: keep **Confirm email** on. Authentication → URL Configuration: set **Site URL** to your portal URL (e.g. `https://portal.profitpulsebootcamp.com`) and add `https://portal.profitpulsebootcamp.com/set-password` under **Redirect URLs**. Add `http://localhost:5173/set-password` too if you'll run it locally.
 4. (Recommended) Authentication → Email Templates → "Invite user": change the copy so it reads like it came from Jakey. Keep the `{{ .ConfirmationURL }}` link.
 5. Project Settings → API: copy the **Project URL**, **anon key**, and **service_role key**.
@@ -30,6 +30,16 @@ Admin → Modules & videos. Paste a Vimeo / YouTube (unlisted) / Loom / Bunny li
 - **Call schedule** (`events`): weekly recurring calls in Eastern time, shown in each student's timezone with a join link. Admin → Call schedule.
 - **Recordings** (`recordings`): one row per past call with a video link; students mark them watched (counts as daily activity). Admin → Recordings.
 - **Leaderboard**: quarter tab uses `leaderboard_since()`; All time uses the `leaderboard` view. Clicking a member shows their point breakdown.
+
+## Automations (Admin → Automations)
+A Netlify scheduled function (`netlify/functions/daily-digest.mjs`) runs daily at 22:00 UTC. Each part turns on when its variable is set in Netlify → Environment variables:
+- `DISCORD_WEBHOOK_URL`: posts the top 10 and the last 24h of approved wins to a Discord channel.
+- `RESEND_API_KEY` + `EMAIL_FROM`: emails students with a 3+ day streak who haven't earned points yet today.
+- `DISCORD_BOT_TOKEN` + `DISCORD_GUILD_ID` + `DISCORD_PHASE1_ROLE_ID`: gives the Phase 1 role to students who finished Phase 1 (matched by the Discord username they entered). The bot needs Manage Roles and the Server Members intent.
+"Preview (dry run)" in Admin shows what would happen without sending. "Run now" runs it immediately.
+
+## Wins and certificate
+Approved achievements appear in the Wins strip on every dashboard (view `wins`). Finishing every lesson in Phases 1–6 unlocks `/certificate`, a downloadable PNG with the student's name and date.
 
 ## Day-to-day
 - **Add a student (reps):** Rep panel → Add a student. The portal creates the account and shows a temporary password once, with a ready-to-send message. The student signs in with it, is forced to set their own password, then adds a photo and lands on the dashboard. Reps see only the students they added; admins see all. "Reset password" issues a new temporary one.

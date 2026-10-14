@@ -221,3 +221,16 @@ export async function adminSaveAnnouncement(a) {
   else { const { error } = await supabase.from('announcements').insert(rest); if (error) throw error }
 }
 export async function adminDeleteAnnouncement(id) { await supabase.from('announcements').delete().eq('id', id) }
+
+// ---------- wins feed ----------
+export async function loadWins(limit = 12) {
+  if (DEMO) { const b = await loadLeaderboard(); return b.slice(0, 6).map((p, i) => ({ id: 'w' + i, name: p.name, photo_url: p.photo_url, title: ['Signed their first client', 'Did 200+ outreaches', 'Launched an AI website', 'First dollar earned', 'Built their client dashboard', 'Booked a sales call'][i], points: [40, 25, 10, 60, 10, 20][i], category: i === 0 || i === 3 ? 'revenue' : 'implement', won_at: new Date(Date.now() - i * 3.2e7).toISOString() })) }
+  const { data } = await supabase.from('wins').select('*').order('won_at', { ascending: false }).limit(limit); return data || []
+}
+export async function markCertified(userId) { await supabase.from('profiles').update({ certified_at: new Date().toISOString() }).eq('id', userId) }
+export async function adminRunDigest(dry) {
+  if (DEMO) return { discord: 'demo', reminders: 'demo', roles: 'demo', details: {} }
+  const { data: { session } } = await supabase.auth.getSession()
+  const r = await fetch(`/.netlify/functions/digest-now${dry ? '?dry=1' : ''}`, { method: 'POST', headers: { authorization: `Bearer ${session.access_token}` } })
+  return r.json()
+}
