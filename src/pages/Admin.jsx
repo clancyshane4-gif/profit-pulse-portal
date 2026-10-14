@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, adminReview, adminUpdateProfile, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -9,9 +9,10 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
+      {tab === 'ach' && <AchievementsAdmin />}
       {tab === 'modules' && <Modules />}
       {tab === 'calls' && <Calls />}
       {tab === 'recordings' && <RecordingsAdmin />}
@@ -43,16 +44,73 @@ function Members() {
 }
 
 function Review() {
-  const [list, setList] = useState([])
+  const [list, setList] = useState([]); const [rej, setRej] = useState(null); const [note, setNote] = useState(''); const [zoom, setZoom] = useState('')
   const load = () => adminLoadPending().then(setList)
   useEffect(() => { load() }, [])
-  async function act(id, status) { await adminReview(id, status); load() }
+  async function act(id, status, n = '') { await adminReviewV2(id, status, n); setRej(null); setNote(''); load() }
+  const quick = ['Screenshot is cut off, send the full page.', 'This looks like a template, show your own version.', 'Need proof it is live (URL or dashboard view).', 'Wrong achievement for this proof.']
   return (
     <div className="card"><b>Pending submissions</b><div className="list" style={{ marginTop: 10 }}>
-      {list.length ? list.map(s => <div key={s.id} className="pending"><div style={{ minWidth: 0 }}><b>{s.profiles?.name}</b> · {s.achievements?.title} <span className="note">(+{s.achievements?.points})</span><div className="note" style={{ wordBreak: 'break-word' }}>{/^https?:\/\//.test(s.proof) ? <a href={s.proof} target="_blank" rel="noopener">{s.proof}</a> : s.proof}</div></div>
-        <div className="row" style={{ gap: 6 }}><button className="btn sm primary" onClick={() => act(s.id, 'approved')}>Approve</button><button className="btn sm" onClick={() => act(s.id, 'rejected')}>Reject</button></div></div>)
+      {list.length ? list.map(s => <div key={s.id} className="revrow" style={{ flexWrap: 'wrap' }}>
+        <div style={{ minWidth: 0, flex: 1 }}><b>{s.profiles?.name}</b> · {s.achievements?.title} <span className="note">(+{s.achievements?.points}) · {new Date(s.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+          {s.proof && <div className="note" style={{ wordBreak: 'break-word', marginTop: 4 }}>{/^https?:\/\//.test(s.proof) ? <a href={s.proof} target="_blank" rel="noopener">{s.proof}</a> : s.proof}</div>}
+          {Array.isArray(s.images) && s.images.length > 0 && <div className="thumbs" style={{ marginTop: 8 }}>{s.images.map((u, i) => <div key={i}><img src={u} alt="" onClick={() => setZoom(u)} style={{ cursor: 'zoom-in' }} /></div>)}</div>}
+          {rej === s.id && <div style={{ marginTop: 10 }}>
+            <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{quick.map(q => <button key={q} className="btn sm" onClick={() => setNote(q)}>{q}</button>)}</div>
+            <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Tell them what to fix. They see this and can resubmit." style={{ minHeight: 60 }} />
+            <div className="row" style={{ gap: 6, marginTop: 6 }}><button className="btn sm primary" onClick={() => act(s.id, 'rejected', note.trim())}>Send rejection</button><button className="btn sm" onClick={() => { setRej(null); setNote('') }}>Cancel</button></div>
+          </div>}
+        </div>
+        {rej !== s.id && <div className="row" style={{ gap: 6 }}><button className="btn sm primary" onClick={() => act(s.id, 'approved')}>Approve</button><button className="btn sm" onClick={() => { setRej(s.id); setNote('') }}>Reject…</button></div>}
+      </div>)
         : <div className="note">Nothing waiting.</div>}
-    </div></div>
+    </div>
+    {zoom && <div className="gate" onClick={() => setZoom('')}><img src={zoom} alt="" style={{ maxWidth: '92vw', maxHeight: '90vh', borderRadius: 14, border: '1px solid var(--line-2)' }} /></div>}
+    </div>
+  )
+}
+
+function AchievementsAdmin() {
+  const [list, setList] = useState([]); const [draft, setDraft] = useState(null); const [msg, setMsg] = useState('')
+  const load = () => loadAchievements().then(setList)
+  useEffect(() => { load() }, [])
+  const flash = s => { setMsg(s); setTimeout(() => setMsg(''), 2500) }
+  const blank = () => ({ key: '', title: '', how: '', points: 10, category: 'implement', icon: '⭐', sort: (Math.max(0, ...list.map(a => a.sort)) + 1), auto_metric: '', auto_threshold: 0 })
+  async function save(e) {
+    e.preventDefault(); const d = { ...draft, key: (draft.key || draft.title).toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 24), points: Number(draft.points), sort: Number(draft.sort), auto_threshold: Number(draft.auto_threshold) || 0 }
+    if (!d.key || !d.title) { flash('Needs a title'); return }
+    try { await adminSaveAchievement(d); setDraft(null); load(); flash(`Saved ${d.title}`) } catch (ex) { flash(ex.message) }
+  }
+  async function del(a) { if (!confirm(`Delete "${a.title}"? Students who earned it lose those points.`)) return; try { await adminDeleteAchievement(a.key); load(); flash('Deleted') } catch (ex) { flash(ex.message) } }
+  const cats = [['implement', 'Build / implementation'], ['revenue', 'Close & earn (milestone)']]
+  return (
+    <div className="card">
+      <div className="row spread" style={{ marginBottom: 10 }}><div><b>Achievements</b><div className="note">What students can earn, how many points, and the order on their path. Outreach badges unlock automatically from the counter.</div></div><button className="btn sm primary" onClick={() => setDraft(blank())}>+ New achievement</button></div>
+      {draft && <form onSubmit={save} className="card" style={{ marginBottom: 12, background: 'var(--glass-2)' }}>
+        <div className="grid2">
+          <div><label className="f">Title</label><input value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} placeholder="Launch your first ad" required /></div>
+          <div><label className="f">Icon (emoji)</label><input value={draft.icon} onChange={e => setDraft({ ...draft, icon: e.target.value })} maxLength={4} /></div>
+        </div>
+        <div style={{ marginTop: 8 }}><label className="f">How to earn it</label><textarea value={draft.how} onChange={e => setDraft({ ...draft, how: e.target.value })} placeholder="What proof should they submit?" style={{ minHeight: 56 }} /></div>
+        <div className="grid2" style={{ marginTop: 8 }}>
+          <div><label className="f">Points</label><input type="number" value={draft.points} onChange={e => setDraft({ ...draft, points: e.target.value })} /></div>
+          <div><label className="f">Order on the path</label><input type="number" value={draft.sort} onChange={e => setDraft({ ...draft, sort: e.target.value })} /></div>
+          <div><label className="f">Group</label><select value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value })}>{cats.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></div>
+          <div><label className="f">Unlock automatically</label><select value={draft.auto_metric} onChange={e => setDraft({ ...draft, auto_metric: e.target.value })}><option value="">No, needs proof</option><option value="outreach">When outreach counter reaches…</option></select></div>
+          {draft.auto_metric === 'outreach' && <div><label className="f">Outreach threshold</label><input type="number" value={draft.auto_threshold} onChange={e => setDraft({ ...draft, auto_threshold: e.target.value })} /></div>}
+          {!list.some(a => a.key === draft.key) && <div><label className="f">Key (short id, optional)</label><input value={draft.key} onChange={e => setDraft({ ...draft, key: e.target.value })} placeholder="auto from title" /></div>}
+        </div>
+        <div className="row" style={{ gap: 8, marginTop: 12 }}><button className="btn primary" type="submit">Save</button><button className="btn" type="button" onClick={() => setDraft(null)}>Cancel</button></div>
+      </form>}
+      <div className="list">
+        {[...list].sort((a, b) => a.sort - b.sort).map(a => <div key={a.key} className="coachrow">
+          <div className="medal" style={{ width: 40, height: 40, borderRadius: 12, display: 'grid', placeItems: 'center', fontSize: 20, background: 'var(--glass-2)', border: '1px solid var(--line-2)' }}>{a.icon || '⭐'}</div>
+          <div style={{ minWidth: 0, flex: 1 }}><b>{a.sort}. {a.title}</b> <span className="pill" style={{ marginLeft: 6 }}>+{a.points}</span> <span className="note">· {a.category === 'revenue' ? 'milestone' : 'build'}{a.auto_metric ? ` · auto at ${a.auto_threshold} outreach` : ''}</span><div className="note">{a.how}</div></div>
+          <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setDraft({ ...a })}>Edit</button><button className="btn sm" onClick={() => del(a)}>Delete</button></div>
+        </div>)}
+      </div>
+      {msg && <div className="toast">{msg}</div>}
+    </div>
   )
 }
 

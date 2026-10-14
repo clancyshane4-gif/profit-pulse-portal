@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase'
 import { loadMyProfile, loadSettings } from './lib/data'
 import Shell from './components/Shell'
 import Announcement from './components/Announcement'
+import ApprovalPop from './components/ApprovalPop'
 import Login from './pages/Login'
 import SetPassword from './pages/SetPassword'
 import OnboardingGate from './pages/OnboardingGate'
@@ -76,6 +77,7 @@ export default function App() {
     <Ctx.Provider value={ctx}>
       {!profile.onboarded && <OnboardingGate />}
       {profile.onboarded && <Announcement />}
+      {profile.onboarded && <ApprovalPop />}
       <Shell>
         <Routes>
           <Route path="/" element={<Dashboard />} />

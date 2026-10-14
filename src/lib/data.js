@@ -234,3 +234,42 @@ export async function adminRunDigest(dry) {
   const r = await fetch(`/.netlify/functions/digest-now${dry ? '?dry=1' : ''}`, { method: 'POST', headers: { authorization: `Bearer ${session.access_token}` } })
   return r.json()
 }
+
+// ---------- achievements v2 ----------
+export function shrinkImage(file, max = 1600) {
+  return new Promise((res, rej) => { const img = new Image(); const url = URL.createObjectURL(file); img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', 0.85) }; img.onerror = () => rej(new Error('bad image')); img.src = url })
+}
+export async function uploadProof(userId, blob) {
+  if (DEMO) return await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob) })
+  const path = `${userId}/${crypto.randomUUID()}.jpg`
+  const { error } = await supabase.storage.from('proofs').upload(path, blob, { contentType: 'image/jpeg' }); if (error) throw error
+  return supabase.storage.from('proofs').getPublicUrl(path).data.publicUrl
+}
+export async function submitProofV2(userId, key, proof, images, existing) {
+  if (existing && existing.status === 'rejected') { const { error } = await supabase.from('submissions').update({ status: 'pending', proof, images }).eq('id', existing.id); if (error) throw error }
+  else { const { error } = await supabase.from('submissions').insert({ profile_id: userId, achievement_key: key, proof, images }); if (error) throw error }
+}
+export async function markSubmissionSeen(id) { await supabase.from('submissions').update({ seen_at: new Date().toISOString() }).eq('id', id) }
+export async function loadUnseenApprovals(userId) {
+  const { data } = await supabase.from('submissions').select('id,achievement_key,reviewed_at,reviewer_note').eq('profile_id', userId).eq('status', 'approved').is('seen_at', null)
+  return data || []
+}
+export async function adminReviewV2(id, status, note) {
+  const { data: { user } } = await supabase.auth.getUser()
+  const { error } = await supabase.from('submissions').update({ status, reviewer_note: note || '', reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq('id', id); if (error) throw error
+}
+export async function loadOutreach(userId) { const { data } = await supabase.from('outreach_log').select('day,count').eq('profile_id', userId).order('day', { ascending: false }); return data || [] }
+export async function logOutreach(userId, n) {
+  const day = todayKey(); const { data } = await supabase.from('outreach_log').select('count').eq('profile_id', userId).eq('day', day).maybeSingle()
+  if (data) await supabase.from('outreach_log').update({ count: Math.max(0, (data.count || 0) + n) }).eq('profile_id', userId).eq('day', day)
+  else await supabase.from('outreach_log').insert({ profile_id: userId, day, count: Math.max(0, n) })
+  await bumpActivity(userId, 0)
+}
+export async function loadAchievementStats() {
+  const wins = (await supabase.from('wins').select('achievement_key,profile_id,name,photo_url,won_at').order('won_at', { ascending: false })).data || []
+  const m = {}; wins.forEach(w => { const s = (m[w.achievement_key] ||= { count: 0, recent: [] }); s.count++; if (s.recent.length < 3 && !s.recent.some(r => r.profile_id === w.profile_id)) s.recent.push(w) }); return m
+}
+export async function adminSaveAchievement(a) {
+  const { error } = await supabase.from('achievements').upsert(a, { onConflict: 'key' }); if (error) throw error
+}
+export async function adminDeleteAchievement(key) { const { error } = await supabase.from('achievements').delete().eq('key', key); if (error) throw error }

@@ -6,7 +6,7 @@ React + Vite frontend, Supabase (auth, Postgres, storage), hosted on Netlify. Ad
 
 ### 1. Supabase
 1. Create a project at supabase.com (free tier is fine to start).
-2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql` and `supabase/migration-4-wins.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
+2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql`, `supabase/migration-4-wins.sql` and `supabase/migration-5-achievements.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
 3. Authentication → Providers → Email: keep **Confirm email** on. Authentication → URL Configuration: set **Site URL** to your portal URL (e.g. `https://portal.profitpulsebootcamp.com`) and add `https://portal.profitpulsebootcamp.com/set-password` under **Redirect URLs**. Add `http://localhost:5173/set-password` too if you'll run it locally.
 4. (Recommended) Authentication → Email Templates → "Invite user": change the copy so it reads like it came from Jakey. Keep the `{{ .ConfirmationURL }}` link.
 5. Project Settings → API: copy the **Project URL**, **anon key**, and **service_role key**.
@@ -79,3 +79,10 @@ The invite function only runs on Netlify (or `netlify dev` with the Netlify CLI)
 - `supabase/schema.sql` the whole database, re-runnable
 - `netlify/functions/create-student.mjs` the only server code: creates a student (or resets their password) with a temporary password, after checking the caller is a rep, coach or admin
 - `public/img/` module cover images pulled from the Skool classroom
+
+## Achievements (v2)
+- Students submit up to 4 screenshots (stored in the `proofs` bucket) plus an optional link or note.
+- Rejecting in Admin → Pending reviews asks for a note; the student sees it on the badge and can **Resubmit**.
+- When a coach approves, the student gets an in-app popup the next time they open the portal.
+- The **Outreach counter** on the Achievements page logs daily outreach to `outreach_log`; the 50 / 100 / 200 badges unlock automatically (database trigger).
+- Admin → **Achievements** lets you add, edit, reorder, re-point or delete achievements and set an outreach threshold for auto-unlock.
