@@ -5,6 +5,27 @@ import { createClient } from '@supabase/supabase-js'
 const WORDS = ['pulse', 'profit', 'build', 'launch', 'client', 'agent', 'scale', 'close', 'pitch', 'brand', 'offer', 'niche']
 const tempPassword = () => { const r = crypto.getRandomValues(new Uint32Array(3)); return `${WORDS[r[0] % WORDS.length]}-${WORDS[r[1] % WORDS.length]}-${1000 + (r[2] % 9000)}` }
 
+
+// Email the login. With RESEND_API_KEY: a branded email containing the temporary password.
+// Without it: Supabase's own "set your password" email (built-in sender, limited to a few per hour).
+async function emailLogin(admin, { email, name, password, site, reset }) {
+  const resend = process.env.RESEND_API_KEY, from = process.env.EMAIL_FROM || 'Profit Pulse AI <noreply@profitpulsebootcamp.com>'
+  if (resend) {
+    const first = (name || '').split(' ')[0] || 'there'
+    const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#111;line-height:1.5">
+      <p>Hey ${first},</p>
+      <p>${reset ? 'Here is your new temporary password for the Profit Pulse AI portal.' : 'Your Profit Pulse AI portal login is ready.'}</p>
+      <p><b>Link:</b> <a href="${site}">${site}</a><br><b>Email:</b> ${email}<br><b>Temporary password:</b> <code style="font-size:16px">${password}</code></p>
+      <p>It will ask you to set your own password the first time you sign in, then add a photo and you're in.</p>
+      <p>See you on the calls.<br>Profit Pulse AI</p></div>`
+    const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: `Bearer ${resend}`, 'content-type': 'application/json' }, body: JSON.stringify({ from, to: email, subject: reset ? 'Your new Profit Pulse AI login' : 'Your Profit Pulse AI portal login', html }) })
+    return r.ok ? 'resend' : ''
+  }
+  // fallback: Supabase recovery email -> /set-password (user picks their own password, no temp password needed)
+  const { error } = await admin.auth.resetPasswordForEmail(email, { redirectTo: site + '/set-password' })
+  return error ? '' : 'supabase'
+}
+
 export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
   const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://uettsffafwzxnlahcllp.supabase.co'), service = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -23,6 +44,8 @@ export default async (req) => {
   const email = String(body.email || '').trim().toLowerCase(), name = String(body.name || '').trim()
   if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: 'Enter a valid email' }, 400)
   const password = tempPassword()
+  const site = process.env.SITE_URL || 'https://profit-pulse-portal.netlify.app'
+  const wantEmail = body.send_email !== false
 
   if (action === 'reset') {
     const { data: prof } = await admin.from('profiles').select('id,role').eq('email', email).maybeSingle()
@@ -31,7 +54,8 @@ export default async (req) => {
     const { error } = await admin.auth.admin.updateUserById(prof.id, { password })
     if (error) return json({ error: error.message }, 400)
     await admin.from('profiles').update({ must_change_password: true }).eq('id', prof.id)
-    return json({ ok: true, email, password, reset: true })
+    const emailed = wantEmail ? await emailLogin(admin, { email, name, password, site, reset: true }) : ''
+    return json({ ok: true, email, password, reset: true, emailed })
   }
 
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } })
@@ -44,6 +68,7 @@ export default async (req) => {
   const patch = { name, must_change_password: true, added_by: user.id }; if (role !== 'student') patch.role = role
   await admin.from('profiles').update(patch).eq('id', data.user.id)
   if (role === 'admin') await admin.from('admin_emails').insert({ email }).then(() => {}, () => {})
-  return json({ ok: true, email, password, id: data.user.id })
+  const emailed = wantEmail ? await emailLogin(admin, { email, name, password, site }) : ''
+  return json({ ok: true, email, password, id: data.user.id, emailed })
 }
 const json = (b, status = 200) => new Response(JSON.stringify(b), { status, headers: { 'content-type': 'application/json' } })

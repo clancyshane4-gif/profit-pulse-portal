@@ -101,3 +101,7 @@ The invite function only runs on Netlify (or `netlify dev` with the Netlify CLI)
 
 ## Live class popup
 - The dashboard shows the next call ("Today at 6:00 PM", countdown under an hour) and "Coach is live" during the call, with the join link from Admin → Call schedule. Dismiss hides that one occurrence.
+
+## Login emails
+- Creating a member (Admin → Members or the Rep panel) emails them automatically. With `RESEND_API_KEY` (+ `EMAIL_FROM` on a verified domain) they get a branded email with the temporary password. Without it, Supabase's built-in sender emails a "set your password" link instead (limited to a few per hour, so add Resend before onboarding a batch).
+- The temporary password is still shown on screen either way, so a rep can also text it.

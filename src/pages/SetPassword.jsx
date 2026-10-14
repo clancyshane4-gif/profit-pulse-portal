@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { clearMustChange } from '../lib/data'
 
 export default function SetPassword({ onDone }) {
   const [ready, setReady] = useState(false); const [pw, setPw] = useState(''); const [pw2, setPw2] = useState('')
@@ -21,6 +22,7 @@ export default function SetPassword({ onDone }) {
     const { error } = await supabase.auth.updateUser({ password: pw })
     setBusy(false)
     if (error) { setErr(error.message); return }
+    try { const { data: { user } } = await supabase.auth.getUser(); if (user) await clearMustChange(user.id) } catch {}
     history.replaceState(null, '', '/'); onDone?.(); nav('/', { replace: true })
   }
   return (

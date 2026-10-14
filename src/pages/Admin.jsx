@@ -53,7 +53,7 @@ function Members() {
       <div className="row" style={{ gap: 10, marginTop: 12, flexWrap: 'wrap' }}><button className="btn primary" disabled={busy}>{busy ? 'Creating…' : 'Create login'}</button><span className="err" style={{ minHeight: 0 }}>{err}</span></div>
     </form>
     {result && <div className="card" style={{ marginBottom: 14, borderColor: 'rgba(34,227,107,.35)' }}>
-      <div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><b>{result.reset ? 'New temporary password' : `${roleLabel[result.role] || 'Login'} created`}</b><span className="pill">Shown once</span></div>
+      <div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><b>{result.reset ? 'New temporary password' : `${roleLabel[result.role] || 'Login'} created`}</b><span className={`pill ${result.emailed ? '' : 'warn'}`}>{result.emailed === 'resend' ? '📧 Emailed to them' : result.emailed === 'supabase' ? '📧 Set-password email sent' : 'Not emailed · send it yourself'}</span></div>
       <div className="grid2" style={{ marginTop: 10 }}>
         <div><div className="note">Email</div><div className="num" style={{ fontSize: 15 }}>{result.email}</div></div>
         <div><div className="note">Temporary password</div><div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{result.password}</div></div>
