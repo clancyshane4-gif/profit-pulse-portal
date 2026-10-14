@@ -40,7 +40,7 @@ export default function LivePop() {
       <b className="ann-title">{live ? `${next.ev.title} is live now` : `${next.ev.title} · ${when}`}</b>
       {live && <p className="ann-body open">{coach} is on. Jump in.</p>}
       <div className="row" style={{ gap: 10, marginTop: 10 }}>
-        {join(next) ? <a className="btn sm primary" href={join(next)} target="_blank" rel="noopener">{live ? 'Join on Google Meet' : 'Google Meet link'} ↗</a> : <Link className="btn sm primary" to="/schedule" onClick={close}>See schedule</Link>}
+        {live && join(next) ? <a className="btn sm primary" href={join(next)} target="_blank" rel="noopener">Join on Google Meet ↗</a> : <Link className="btn sm primary" to="/schedule" onClick={close}>See schedule</Link>}
         {!live && <button className="btn sm" onClick={close}>Got it</button>}
       </div>
     </div>
