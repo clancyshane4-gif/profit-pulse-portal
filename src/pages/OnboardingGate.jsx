@@ -21,28 +21,27 @@ export default function OnboardingGate({ edit, onClose }) {
   }
   async function finish() {
     if (!preview) { setErr('Add a photo to continue.'); return }
-    if (!name.trim()) { setErr('Add your name.'); return }
     setBusy(true); setErr('')
     try {
       let photo_url = profile.photo_url || ''
       if (blob) photo_url = await uploadAvatar(user.id, blob)
       const loc = geo && geo.city === city.trim() ? { lat: geo.lat, lng: geo.lng } : {}
-      await saveMyProfile(user.id, { ...loc, name: name.trim(), city: city.trim(), discord: discord.trim().replace(/^@/, ''), photo_url, onboarded: true })
+      await saveMyProfile(user.id, { ...loc, name: (name || profile.name || '').trim(), city: city.trim(), discord: discord.trim().replace(/^@/, ''), photo_url, onboarded: true })
       if (!profile.onboarded) await bumpActivity(user.id, 0)
       await refreshProfile(); onClose?.()
     } catch (e) { setErr(e.message || 'Could not save. Try again.') }
     setBusy(false)
   }
   return (
-    <div className="gate">
+    <div className={`gate ${edit ? '' : 'onboard'}`}>
       <div className="box">
         <div className="eyebrow">{edit ? 'Your profile' : 'Welcome to Profit Pulse AI'}</div>
-        <h2>Add your photo.</h2>
-        <p className="muted" style={{ margin: '0 0 18px' }}>Your photo shows on the leaderboard and the member map. Takes ten seconds.</p>
+        <h2>{edit ? 'Edit your profile' : `Hey ${(profile.name || '').split(' ')[0] || 'there'}, add your photo.`}</h2>
+        <p className="muted" style={{ margin: '0 0 18px' }}>Your photo shows on the leaderboard and the member map. The portal unlocks as soon as it's in.</p>
         <div>
           <label className="drop" htmlFor="photoInput"><Avatar name={name} url={preview} size={112} /><b>{preview ? 'Change photo' : 'Choose a photo'}</b><span className="note">JPG or PNG. We crop it to a square for you.</span></label>
           <input type="file" id="photoInput" accept="image/*" hidden onChange={pick} />
-          <div style={{ marginTop: 14 }}><label className="f" htmlFor="nameInput">Your name</label><input id="nameInput" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="First and last name" autoComplete="name" /></div>
+          {edit && <div style={{ marginTop: 14 }}><label className="f" htmlFor="nameInput">Your name</label><input id="nameInput" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="First and last name" autoComplete="name" /></div>}
           <div className="grid g2" style={{ gap: 10, marginTop: 12 }}>
             <div><label className="f" htmlFor="cityInput">City, State (for the map)</label><input id="cityInput" type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Tampa, FL" /><div className="note" style={{ marginTop: 4 }}>{geo && geo.city === city ? "Found from your connection. Fix it if it's off." : ""}</div></div>
             <div><label className="f" htmlFor="discordInput">Discord username</label><input id="discordInput" type="text" value={discord} onChange={e => setDiscord(e.target.value)} placeholder="e.g. jakey_closes" autoComplete="off" /></div>

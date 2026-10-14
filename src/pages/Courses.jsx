@@ -24,7 +24,7 @@ export default function Courses() {
         <div className="pic"><Icon name={lk ? 'lock' : p.icon} size={26} color={p.color} /></div>
         <div style={{ minWidth: 0 }}><div className="ph" style={{ color: p.color }}>{p.group_key === 'bonus' ? 'Bonus' : `Phase ${p.sort}`}</div><h3>{p.title}</h3></div>
       </div>
-      {lk ? <div className="locked-body"><div className="blur-lines"><i /><i style={{ width: '70%' }} /><i style={{ width: '45%' }} /></div><div className="row" style={{ gap: 8, fontSize: 12.5, color: 'var(--muted)' }}><span>🔒</span><span>{unlockHint(p)}</span><span className="num" style={{ marginLeft: 'auto' }}>{ls.length} lessons</span></div></div>
+      {lk ? <div className="locked-body"><p>{p.description}</p><div className="row" style={{ gap: 8, fontSize: 12.5, color: 'var(--muted)', marginTop: 'auto' }}><span>🔒</span><span>{unlockHint(p)}</span><span className="num" style={{ marginLeft: 'auto' }}>{ls.length} lessons</span></div></div>
       : <><p>{p.description}</p>
       <div className="row spread" style={{ fontSize: 12.5, color: 'var(--muted)' }}><span className="num">{d} / {ls.length} lessons{ls.some(m => m.kind === 'quiz') ? ' · quiz' : ''}</span><span className="num">{pct}%</span></div>
       <div className="bar thin"><i style={{ width: pct + '%', background: p.color, boxShadow: `0 0 12px ${p.color}` }} /></div></>}

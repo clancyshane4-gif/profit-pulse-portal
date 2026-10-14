@@ -35,7 +35,7 @@ export default function Schedule() {
         <div className="cal-head"><div /> {DAYS.map((d, i) => { const dt = new Date(weekStart); dt.setDate(dt.getDate() + i); const today = dt.toDateString() === now.toDateString(); return <div key={d} className={today ? 'today' : ''}><small>{d}</small><b>{dt.getDate()}</b></div> })}</div>
         <div className="cal-body" style={{ height: hours.length * PX }}>
           <div className="cal-hours">{hours.map(h => <div key={h} style={{ height: PX }}><span>{new Date(2000, 0, 1, h).toLocaleTimeString([], { hour: 'numeric' })}</span></div>)}</div>
-          {DAYS.map((_, di) => <div key={di} className="cal-col">
+          {DAYS.map((_, di) => <div key={di} className={`cal-col ${inWeek && now.getDay() === di ? 'today' : ''}`}>
             {hours.map(h => <div key={h} className="cal-line" style={{ top: (h - minH) * PX }} />)}
             {inWeek && now.getDay() === di && <div className="cal-now" style={{ top: nowTop }} />}
             {items.filter(i => i.day === di).map(i => <button key={i.ev.id} className="cal-ev" style={{ top: (i.top - minH * 60) / 60 * PX, height: i.len / 60 * PX - 4, '--c': i.ev.color }} onClick={e => { e.stopPropagation(); setOpen(open?.ev.id === i.ev.id ? null : i) }}>

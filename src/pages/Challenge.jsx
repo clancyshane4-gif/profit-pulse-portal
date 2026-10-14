@@ -27,7 +27,7 @@ export default function Challenge() {
       <div className="grid g2 ways">
         <div className="card"><b>Learn</b><p className="note" style={{ margin: '4px 0 10px' }}>Points scale with video length.</p>
           <table><tbody>{learn.map(([a, b]) => <tr key={a}><td><span className="mini"><i style={{ width: b / 12 * 100 + '%' }} /></span>{a}</td><td>+{b}</td></tr>)}</tbody></table></div>
-        <div className="card"><b>Implement and earn</b><p className="note" style={{ margin: '4px 0 10px' }}>Submit proof on the Achievements page.</p>
+        <div className="card glow-green"><b>Implement and earn</b><p className="note" style={{ margin: '4px 0 10px' }}>Submit proof on the Achievements page.</p>
           <table><tbody>{ach.map(a => <tr key={a.key}><td><span className="mini"><i style={{ width: Math.max(6, a.points / maxA * 100) + '%' }} /></span>{a.title}</td><td>+{a.points}</td></tr>)}</tbody></table></div>
       </div>
     </section>

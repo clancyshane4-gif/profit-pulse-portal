@@ -22,7 +22,7 @@ export default function Leaderboard() {
     <section className="page" onClick={() => setOpen(null)}>
       <div className="head"><div><h1>Leaderboard</h1><p>Click anyone to see where their points came from.</p></div></div>
       <div className="tabs" style={{ borderBottom: '1px solid var(--line)', paddingBottom: 12 }}><button className={tab === 'challenge' ? 'on' : ''} onClick={() => setTab('challenge')}>{ch.eyebrow || 'This quarter'}</button><button className={tab === 'all' ? 'on' : ''} onClick={() => setTab('all')}>All time</button></div>
-      <div className="card" style={{ marginBottom: 22 }}><div className="note" style={{ marginBottom: 14 }}>Tier milestones</div>
+      <div className="card glow-green" style={{ marginBottom: 22 }}><div className="note" style={{ marginBottom: 14 }}>Tier milestones</div>
         <div className="orbs"><div className="orb-line" /><div className="orb-fill" style={{ width: Math.min(100, mine / maxT * 100) + '%' }} />
           {tiers.map(([n, v, c], i) => { const size = 10 + i * 6; const reached = mine >= v; return <div key={n} className="orb-item"><i style={{ width: size, height: size, background: c, boxShadow: reached ? `0 0 ${8 + i * 4}px ${c}` : 'none', opacity: reached ? 1 : .35 }} /><b style={{ color: reached ? c : 'var(--muted)' }}>{n}</b><small>{fmtK(v)}{i === tiers.length - 1 ? '+' : ''}</small></div> })}
         </div></div>
