@@ -9,7 +9,7 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['support', 'Support'], ['affiliate', 'Affiliate tools'], ['resources', 'Resources'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['support', 'Support'], ['affiliate', 'Affiliate Tools'], ['resources', 'Resources'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
       {tab === 'ach' && <AchievementsAdmin />}

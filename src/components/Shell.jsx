@@ -21,7 +21,7 @@ const ICON = {
 const NAV = [
   ['/', 'Dashboard', 'dashboard'], ['/courses', 'Courses', 'courses'], ['/recordings', 'Recordings', 'recordings'], ['/schedule', 'Schedule', 'schedule'],
   ['/challenge', 'Challenge', 'challenge'], ['/leaderboard', 'Leaderboard', 'leaderboard'], ['/map', 'Map', 'map'],
-  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/affiliate', 'Affiliate tools', 'affiliate'], ['/onboarding', 'Onboarding', 'onboarding'],
+  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/affiliate', 'Affiliate Tools', 'affiliate'], ['/onboarding', 'Onboarding', 'onboarding'],
 ]
 
 export default function Shell({ children }) {

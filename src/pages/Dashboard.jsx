@@ -48,7 +48,7 @@ export default function Dashboard() {
     <section className="page">
       <div className="dash-hero">
         <div>
-          <div className="eyebrow">{days != null ? `${ch.eyebrow} · ${days} days left` : 'Your progress'}</div>
+          <div className="eyebrow">{days != null ? <span className="challenge-tag">🏆 {ch.eyebrow} · {days} days left</span> : 'Your progress'}</div>
           <h1 style={{ fontSize: 30, margin: '6px 0 14px' }}>Welcome back, {first}.</h1>
           <div className="big pts num">{shown}<small>points</small></div>
           <div className="sub">{rank >= 0 ? `Ranked #${rank + 1} of ${d.board.length}` : 'Not ranked yet'} · {t}</div>

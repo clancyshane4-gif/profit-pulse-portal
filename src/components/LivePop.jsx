@@ -8,7 +8,7 @@ import { occurrence } from '../pages/Schedule'
 const SOON_HOURS = 20
 export default function LivePop() {
   const [events, setEvents] = useState([]); const [tick, setTick] = useState(0)
-  const [dismissed, setDismissed] = useState(() => { try { return JSON.parse(localStorage.getItem('pp_live_dismissed') || '[]') } catch { return [] } })
+  const [dismissed, setDismissed] = useState([])
   useEffect(() => { loadEvents().then(setEvents); const t = setInterval(() => setTick(x => x + 1), 60000); return () => clearInterval(t) }, [])
   const loc = useLocation()
   const now = new Date()
@@ -26,7 +26,7 @@ export default function LivePop() {
   const live = next.start <= now && next.end > now
   const hoursAway = (next.start - now) / 36e5
   if (!live && hoursAway > SOON_HOURS) return null
-  const close = () => { const d = [...dismissed.slice(-20), key]; setDismissed(d); try { localStorage.setItem('pp_live_dismissed', JSON.stringify(d)) } catch {} }
+  const close = () => setDismissed(d => [...d, key])
   const time = next.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
   const today = next.start.toDateString() === now.toDateString()
   const mins = Math.round(hoursAway * 60)

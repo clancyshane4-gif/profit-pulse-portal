@@ -7,7 +7,7 @@ export default function Affiliate() {
   const copy = async (u) => { try { await navigator.clipboard.writeText(u); setCopied(u); setTimeout(() => setCopied(''), 1500) } catch {} }
   return (
     <section className="page">
-      <div className="head"><div><h1>Affiliate tools</h1><p>The paid tools we use and recommend. Sign up through these links, and share them with clients: every account you bring in pays the bootcamp (and you, once you're an affiliate).</p></div></div>
+      <div className="head"><div><h1>Affiliate Tools</h1><p>The paid tools we use and recommend. Sign up through these links, and share them with clients: every account you bring in pays the bootcamp (and you, once you're an affiliate).</p></div></div>
       {!tools.length && <div className="card"><div className="empty"><div className="ic">🧰</div><b>Nothing here yet</b><span>Admins add tools in Admin → Affiliate tools.</span></div></div>}
       <div className="aff">{tools.map(([n, b, cat, u, price, comm, domain]) => <div key={n} className="tool">
         <div className="row" style={{ gap: 12 }}><div className="ic"><img src={`https://www.google.com/s2/favicons?domain=${domain || (u ? new URL(u).hostname : '')}&sz=128`} alt="" /></div><div style={{ minWidth: 0 }}><b>{n}</b><div className="price">{price}</div></div>{cat && <span className="pill" style={{ marginLeft: 'auto', alignSelf: 'flex-start' }}>{cat}</span>}</div>

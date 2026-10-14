@@ -428,8 +428,10 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .ann.tip .ann-eyebrow{color:var(--gold)}
 
 /* popup stack (bottom-right) */
-.popstack{position:fixed;right:22px;bottom:86px;width:min(400px,calc(100% - 32px));display:flex;flex-direction:column;gap:12px;z-index:45;pointer-events:none}
-.popstack .ann{position:static;width:auto;pointer-events:auto}
+.popstack{position:fixed;right:18px;top:18px;width:min(340px,calc(100% - 32px));display:flex;flex-direction:column;gap:10px;z-index:45;pointer-events:none}
+.popstack .ann{position:static;width:auto;pointer-events:auto;padding:14px 16px;border-radius:16px;animation:drop .3s ease}
+.popstack .ann-title{font-size:15.5px}.popstack .ann-body{font-size:12.5px}.popstack .ann-eyebrow{font-size:10.5px;margin-bottom:5px}.popstack .medal.pop{width:40px;height:40px;font-size:20px}
+@keyframes drop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 .ann.live{background:linear-gradient(160deg,rgba(239,68,68,.22),rgba(13,19,34,.96) 45%);border-color:rgba(239,68,68,.5);box-shadow:0 24px 60px rgba(0,0,0,.6),0 0 40px rgba(239,68,68,.18)}
 .ann.live .ann-eyebrow{color:#ff6b6b}
 .ann.soon{background:linear-gradient(160deg,rgba(61,214,245,.16),rgba(13,19,34,.96) 45%);border-color:rgba(61,214,245,.4)}
@@ -460,7 +462,7 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .inbox-row:hover,.inbox-row.on{background:var(--glass-2)}
 .inbox-row b{display:block;font-size:13.5px}.inbox-row small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inbox-thread{display:flex;flex-direction:column;min-height:0}
-@media (max-width:800px){.inbox{grid-template-columns:1fr}.inbox-list{border-right:0;max-height:220px}.popstack{bottom:86px}}
+@media (max-width:800px){.inbox{grid-template-columns:1fr}.inbox-list{border-right:0;max-height:220px}.popstack{top:64px}}
 
 /* affiliate tools */
 .aff{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -473,3 +475,5 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 @media (max-width:1000px){.aff{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.aff{grid-template-columns:1fr}}
 .chat-open .popstack{display:none}
+
+.challenge-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#ffd978;background:linear-gradient(90deg,rgba(245,198,82,.22),rgba(255,138,92,.16));border:1px solid rgba(245,198,82,.45);box-shadow:0 0 18px rgba(245,198,82,.18)}
