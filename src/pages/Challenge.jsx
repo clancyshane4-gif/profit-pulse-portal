@@ -15,7 +15,7 @@ export default function Challenge() {
   return (
     <section className="page">
       <div className="hero">
-        <div className="eyebrow">{ch.eyebrow || 'Challenge'}</div>
+        <div className="eyebrow"><span className="challenge-tag">🏆 {ch.eyebrow || 'Challenge'} · {Math.ceil(ms / 864e5)} days left</span></div>
         <h2 style={{ marginTop: 10 }}>{ch.title}</h2>
         <p>{ch.description}</p>
         <div className="count">{[[d, 'days'], [pad(h), 'hours'], [pad(mi), 'minutes'], [pad(s), 'seconds']].map(([v, l]) => <div key={l}><b>{v}</b><small>{l}</small></div>)}</div>

@@ -21,8 +21,8 @@ export default function Schedule() {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const weekStart = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - d.getDay() + offset * 7); return d }, [offset])
   const items = events.map(ev => { const { start, end } = occurrence(weekStart, ev); return { ev, start, end, day: start.getDay(), top: start.getHours() * 60 + start.getMinutes(), len: ev.duration_min } })
-  // full working day: 8 AM to 11 PM (stretches if a call falls outside)
-  const minH = Math.max(0, Math.min(8, ...items.map(i => Math.floor(i.top / 60)))); const maxH = Math.min(24, Math.max(23, ...items.map(i => Math.ceil((i.top + i.len) / 60))))
+  // noon to 11 PM so the evening calls sit mid-grid (stretches if a call falls outside)
+  const minH = Math.max(0, Math.min(12, ...items.map(i => Math.floor(i.top / 60)))); const maxH = Math.min(24, Math.max(23, ...items.map(i => Math.ceil((i.top + i.len) / 60))))
   const hours = []; for (let h = minH; h < maxH; h++) hours.push(h)
   const PX = 44 // px per hour
   const now = new Date(); const nowTop = (now.getHours() * 60 + now.getMinutes() - minH * 60) / 60 * PX

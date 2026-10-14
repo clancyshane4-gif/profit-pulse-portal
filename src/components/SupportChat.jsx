@@ -1,10 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../App'
-import { loadSupportThread, sendSupport, markSupportRead } from '../lib/data'
+import { Link, useLocation } from 'react-router-dom'
+import { loadSupportThread, sendSupport, markSupportRead, adminLoadSupportInbox } from '../lib/data'
 
 // Floating support bubble (bottom-right). Student writes, gets an instant auto-reply, coach answers from Admin → Support.
 export default function SupportChat() {
   const { user, profile, settings, isAdmin } = useApp()
+  if (isAdmin) return <StaffBubble />
+  return <StudentChat user={user} profile={profile} settings={settings} />
+}
+
+// Staff see a bubble with the number of unanswered student messages; it opens the inbox.
+function StaffBubble() {
+  const [n, setN] = useState(0); const loc = useLocation()
+  useEffect(() => { const load = () => adminLoadSupportInbox().then(t => setN(t.reduce((s, x) => s + x.unread, 0))).catch(() => {}); load(); const i = setInterval(load, 30000); return () => clearInterval(i) }, [loc.pathname])
+  if (loc.pathname === '/admin') return null
+  return <Link className="support-fab" to="/admin?tab=support" title="Support inbox" aria-label="Support inbox">💬{n > 0 && <span className="fab-badge">{n}</span>}</Link>
+}
+
+function StudentChat({ user, profile, settings }) {
   const cfg = { email: 'support@aiprofitpulse.com', auto_reply: 'Got it. A coach replies here within 24 hours.', hours: '', ...(settings.support || {}) }
   const [open, setOpen] = useState(false); const [msgs, setMsgs] = useState([]); const [text, setText] = useState(''); const [busy, setBusy] = useState(false); const [auto, setAuto] = useState(false)
   const endRef = useRef(null)
@@ -17,7 +31,6 @@ export default function SupportChat() {
     e?.preventDefault(); const body = text.trim(); if (!body) return
     setBusy(true); try { await sendSupport(user.id, user.id, body); setText(''); setAuto(true); await load() } catch (ex) { alert(ex.message) } setBusy(false)
   }
-  if (isAdmin) return null  // staff answer from Admin → Support
   const first = (profile.name || '').split(' ')[0] || 'there'
   return (
     <>

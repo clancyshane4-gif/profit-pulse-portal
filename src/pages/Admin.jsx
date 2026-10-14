@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useApp } from '../App'
 import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest, loadTips, adminSaveTip, adminDeleteTip, adminSaveSetting, adminPostTipNow, loadSettings, adminLoadSupportInbox, sendSupport, markSupportRead } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
 export default function Admin() {
-  const [tab, setTab] = useState('members')
+  const [sp] = useSearchParams(); const [tab, setTab] = useState(sp.get('tab') || 'members')
+  useEffect(() => { const t = sp.get('tab'); if (t) setTab(t) }, [sp])
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
@@ -388,7 +390,7 @@ function SupportInbox() {
 
 function AffiliateAdmin() {
   const { settings } = useApp(); const [tools, setTools] = useState(settings.affiliate_tools || []); const [msg, setMsg] = useState('')
-  const F = ['Name', 'Description', 'Category', 'Affiliate link', 'Price', 'Commission', 'Logo domain']
+  const F = ['Name', 'Description', 'Category', 'Affiliate link', 'Price', 'Commission', 'Logo (domain, or image URL)']
   const set = (i, j, v) => setTools(t => t.map((row, k) => k === i ? row.map((c, l) => l === j ? v : c) : row))
   async function save() { try { await adminSaveSetting('affiliate_tools', tools); setMsg('Saved. Students see it on refresh.'); setTimeout(() => setMsg(''), 3000) } catch (ex) { setMsg(ex.message) } }
   return (
