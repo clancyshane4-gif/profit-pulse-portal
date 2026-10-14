@@ -7,7 +7,7 @@ const tempPassword = () => { const r = crypto.getRandomValues(new Uint32Array(3)
 
 export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
-  const url = process.env.SUPABASE_URL, service = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://uettsffafwzxnlahcllp.supabase.co'), service = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !service) return json({ error: 'Server is missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY' }, 500)
   const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
   if (!token) return json({ error: 'Not signed in' }, 401)
