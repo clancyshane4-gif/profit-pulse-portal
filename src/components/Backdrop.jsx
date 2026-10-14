@@ -3,7 +3,8 @@ import { useLocation } from 'react-router-dom'
 
 // Page atmosphere: drifting aurora fields, a fine dot grid, a pulse line across the top (the logo, alive),
 // and a per-page tint so each section has its own color. All CSS; nothing here costs the page anything.
-const TINT = { '/': '34,227,107', '/courses': '167,139,250', '/recordings': '61,214,245', '/schedule': '61,214,245', '/challenge': '245,198,82', '/leaderboard': '245,198,82', '/map': '34,227,107', '/achievements': '245,198,82', '/resources': '167,139,250', '/affiliate': '255,138,92', '/admin': '143,151,173', '/rep': '143,151,173' }
+const G = '34,227,107', V = '167,139,250'
+const TINT = { '/': G, '/courses': V, '/recordings': G, '/schedule': V, '/challenge': G, '/leaderboard': V, '/map': G, '/achievements': V, '/resources': G, '/affiliate': V, '/onboarding': G, '/admin': V, '/rep': G }
 export default function Backdrop() {
   const { pathname } = useLocation()
   const key = '/' + (pathname.split('/')[1] || '')

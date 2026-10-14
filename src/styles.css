@@ -497,8 +497,8 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .shell{position:relative;z-index:1}
 .aurora{position:absolute;border-radius:50%;filter:blur(80px);opacity:.75;will-change:transform}
 .a1{width:70vw;height:70vw;left:-25vw;top:-30vw;background:radial-gradient(circle,rgba(var(--tint),.34),transparent 62%);animation:drift1 28s ease-in-out infinite alternate;transition:background 1.2s}
-.a2{width:60vw;height:60vw;right:-25vw;bottom:-30vw;background:radial-gradient(circle,rgba(61,214,245,.16),transparent 62%);animation:drift2 34s ease-in-out infinite alternate}
-.a3{width:40vw;height:40vw;left:35vw;top:30vh;background:radial-gradient(circle,rgba(167,139,250,.10),transparent 62%);animation:drift3 40s ease-in-out infinite alternate}
+.a2{width:60vw;height:60vw;right:-25vw;bottom:-30vw;background:radial-gradient(circle,rgba(167,139,250,.18),transparent 62%);animation:drift2 34s ease-in-out infinite alternate}
+.a3{width:40vw;height:40vw;left:35vw;top:30vh;background:radial-gradient(circle,rgba(34,227,107,.10),transparent 62%);animation:drift3 40s ease-in-out infinite alternate}
 @keyframes drift1{to{transform:translate(12vw,10vh) scale(1.12)}}
 @keyframes drift2{to{transform:translate(-10vw,-12vh) scale(1.08)}}
 @keyframes drift3{to{transform:translate(-14vw,8vh) scale(1.2)}}
