@@ -17,7 +17,7 @@
 }
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(900px 500px at -10% -10%,rgba(34,227,107,.10),transparent 60%),radial-gradient(800px 500px at 110% 110%,rgba(61,214,245,.07),transparent 60%);background-attachment:fixed}
+}
 *{box-sizing:border-box}
 img{max-width:100%}
 [hidden]{display:none!important}
@@ -490,3 +490,23 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .legend b{color:var(--fg)}
 .pill.teal{color:var(--gold);border-color:rgba(245,198,82,.4);background:rgba(245,198,82,.12)}
 .ways td:last-child,.ways .pt{color:var(--gold)}
+
+/* ---------- backdrop ---------- */
+:root{--tint:34,227,107}
+.backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.shell{position:relative;z-index:1}
+.aurora{position:absolute;border-radius:50%;filter:blur(80px);opacity:.75;will-change:transform}
+.a1{width:70vw;height:70vw;left:-25vw;top:-30vw;background:radial-gradient(circle,rgba(var(--tint),.34),transparent 62%);animation:drift1 28s ease-in-out infinite alternate;transition:background 1.2s}
+.a2{width:60vw;height:60vw;right:-25vw;bottom:-30vw;background:radial-gradient(circle,rgba(61,214,245,.16),transparent 62%);animation:drift2 34s ease-in-out infinite alternate}
+.a3{width:40vw;height:40vw;left:35vw;top:30vh;background:radial-gradient(circle,rgba(167,139,250,.10),transparent 62%);animation:drift3 40s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(12vw,10vh) scale(1.12)}}
+@keyframes drift2{to{transform:translate(-10vw,-12vh) scale(1.08)}}
+@keyframes drift3{to{transform:translate(-14vw,8vh) scale(1.2)}}
+.grid-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.2px);background-size:26px 26px;mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000 20%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000 20%,transparent 100%)}
+.pulse{position:absolute;left:var(--rail);right:0;top:-16px;height:56px;width:calc(100% - var(--rail));opacity:.35;filter:drop-shadow(0 0 8px rgba(var(--tint),.6))}
+.pulse path{stroke-dasharray:1400;stroke-dashoffset:1400;animation:trace 7s linear infinite}
+@keyframes trace{0%{stroke-dashoffset:1400;opacity:0}8%{opacity:1}70%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 90% 80% at 50% 40%,transparent 50%,rgba(3,5,10,.55) 100%)}
+.rail{position:relative;z-index:2}
+@media (max-width:960px){.pulse{left:0;width:100%}.aurora{filter:blur(60px)}}
+@media (prefers-reduced-motion:reduce){.aurora,.pulse path{animation:none}}

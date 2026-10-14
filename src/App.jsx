@@ -7,6 +7,7 @@ import Announcement from './components/Announcement'
 import ApprovalPop from './components/ApprovalPop'
 import LivePop from './components/LivePop'
 import SupportChat from './components/SupportChat'
+import Backdrop from './components/Backdrop'
 import Login from './pages/Login'
 import SetPassword from './pages/SetPassword'
 import OnboardingGate from './pages/OnboardingGate'
@@ -78,6 +79,7 @@ export default function App() {
 
   return (
     <Ctx.Provider value={ctx}>
+      <Backdrop />
       {!profile.onboarded && <OnboardingGate />}
       {profile.onboarded && <div className="popstack"><LivePop /><ApprovalPop /><Announcement /></div>}
       {profile.onboarded && <SupportChat />}
