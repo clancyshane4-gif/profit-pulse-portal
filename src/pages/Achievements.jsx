@@ -73,7 +73,6 @@ function Badge({ id, a, s, stat, milestone, onSubmit, rankAfter, myRank, hasBoar
         {st === 'pending' && <div className="pill warn" style={{ marginTop: 8 }}>Waiting for review</div>}
         {st === 'rejected' && <div className="reject"><b>Not approved.</b> {s.reviewer_note || 'Add clearer proof and resubmit.'}</div>}
         {(st === 'locked' || st === 'rejected') && !a.auto_metric && <div className="row" style={{ gap: 10, marginTop: 10, flexWrap: 'wrap' }}><button className={`btn sm ${st === 'rejected' ? 'primary' : ''}`} onClick={onSubmit}>{st === 'rejected' ? 'Resubmit' : 'Submit proof'}</button>{hasBoard && rankAfter(a.points) < myRank && <span className="note">+{a.points} → #{rankAfter(a.points)}</span>}</div>}
-        {stat?.count > 0 && <div className="row" style={{ gap: 6, marginTop: 10 }}><div className="row" style={{ gap: 0 }}>{stat.recent.map((r, i) => <span key={i} style={{ marginLeft: i ? -8 : 0 }}><Avatar name={r.name} url={r.photo_url} size={22} /></span>)}</div><span className="note">{stat.count} student{stat.count === 1 ? ' has' : 's have'} earned this</span></div>}
       </div>
       <span className="pt">+{a.points}</span>
     </div>

@@ -16,7 +16,7 @@ export default function WinsFeed() {
       <div className="row spread" style={{ marginBottom: 12 }}><b>Wins</b><span className="note">approved results from the whole bootcamp</span></div>
       {!wins ? <div className="skel" style={{ height: 60 }} /> : wins.length ? <div className="wins-row">{wins.map(w => <div key={w.id} className={`win ${w.category === 'revenue' ? 'big' : ''}`}>
         <Avatar name={w.name} url={w.photo_url} size={36} />
-        <div style={{ minWidth: 0 }}><b>{(w.name || '').split(' ')[0]}</b> <span>{VERB[w.achievement_key] || w.title.toLowerCase()}</span><div className="note">{ago(w.won_at)} · <span style={{ color: 'var(--green)' }}>+{w.points}</span></div></div>
+        <div style={{ minWidth: 0 }}><b>{(w.name || '').split(' ')[0]}</b> <span>{VERB[w.achievement_key] || w.title.toLowerCase()}</span><div className="note">{ago(w.won_at)} · <em>+{w.points}</em></div></div>
       </div>)}</div>
         : <div className="empty" style={{ padding: 18 }}><div className="ic">🔥</div><b>No wins yet</b><span>The first approved result shows up here for everyone to see.</span></div>}
     </div>
