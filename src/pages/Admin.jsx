@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest, loadTips, adminSaveTip, adminDeleteTip, adminSaveSetting, adminPostTipNow, loadSettings } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -221,7 +221,8 @@ function Announcements() {
   const load = () => loadAnnouncements(true).then(setList); useEffect(() => { load() }, [])
   const blank = { title: '', body: '', link_url: '', link_label: 'Join here', active: true }
   async function save(e) { e.preventDefault(); try { await adminSaveAnnouncement(edit); setEdit(null); load(); setMsg('Posted. Students see it the next time they open the portal.'); setTimeout(() => setMsg(''), 3000) } catch (ex) { setMsg(ex.message) } }
-  return (
+  return (<>
+    <DailyTip />
     <div className="card"><div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><div><b>Announcements</b><div className="note">The newest active one pops up in the corner for every student until they dismiss it.</div></div><button className="btn sm primary" onClick={() => setEdit(blank)}>+ New announcement</button></div>
       {edit && <form onSubmit={save} className="list" style={{ marginTop: 14 }}>
         <div><label className="f">Title</label><input type="text" value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} placeholder="LIVE CLASS @ 7pm ET Wednesday 10/15" required /></div>
@@ -229,10 +230,55 @@ function Announcements() {
         <div className="grid g2" style={{ gap: 8 }}><div><label className="f">Link (optional)</label><input type="text" value={edit.link_url} onChange={e => setEdit({ ...edit, link_url: e.target.value })} placeholder="https://zoom.us/..." /></div><div><label className="f">Button text</label><input type="text" value={edit.link_label} onChange={e => setEdit({ ...edit, link_label: e.target.value })} /></div></div>
         <div className="row" style={{ gap: 8 }}><button className="btn primary">{edit.id ? 'Save' : 'Post announcement'}</button><button type="button" className="btn" onClick={() => setEdit(null)}>Cancel</button></div>
       </form>}
-      {list.map(a => <div key={a.id} className="coachrow" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }}><div><b>{a.title}</b> <span className="note">· {new Date(a.created_at).toLocaleDateString()}{a.active ? '' : ' · hidden'}</span><div className="note" style={{ whiteSpace: 'pre-wrap' }}>{a.body}</div></div>
+      {list.filter(a => a.kind !== 'tip').map(a => <div key={a.id} className="coachrow" style={{ gridTemplateColumns: 'minmax(0,1fr) auto' }}><div><b>{a.title}</b> <span className="note">· {new Date(a.created_at).toLocaleDateString()}{a.active ? '' : ' · hidden'}</span><div className="note" style={{ whiteSpace: 'pre-wrap' }}>{a.body}</div></div>
         <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setEdit(a)}>Edit</button><button className="btn sm" onClick={async () => { await adminSaveAnnouncement({ ...a, active: !a.active }); load() }}>{a.active ? 'Hide' : 'Show'}</button><button className="btn sm" onClick={async () => { await adminDeleteAnnouncement(a.id); load() }}>Delete</button></div></div>)}
-      {!list.length && <div className="note" style={{ padding: '10px 0' }}>Nothing posted yet.</div>}
+      {!list.filter(a => a.kind !== 'tip').length && <div className="note" style={{ padding: '10px 0' }}>Nothing posted yet.</div>}
       <div className="note" style={{ marginTop: 8 }}>{msg}</div>
+    </div>
+  </>)
+}
+
+const HOURS = Array.from({ length: 24 }, (_, h) => [h, new Date(2000, 0, 1, h).toLocaleTimeString([], { hour: 'numeric' }) + ' ET'])
+function DailyTip() {
+  const [tips, setTips] = useState([]); const [cfg, setCfg] = useState({ enabled: true, hour_et: 9 }); const [edit, setEdit] = useState(null); const [msg, setMsg] = useState(''); const [showAll, setShowAll] = useState(false); const [busy, setBusy] = useState(false)
+  const load = () => { loadTips().then(setTips); loadSettings().then(s => { if (s.auto_tip) setCfg({ enabled: true, hour_et: 9, ...s.auto_tip }) }) }
+  useEffect(() => { load() }, [])
+  const flash = t => { setMsg(t); setTimeout(() => setMsg(''), 3000) }
+  async function saveCfg(next) { setCfg(next); try { await adminSaveSetting('auto_tip', next); flash('Saved') } catch (ex) { flash(ex.message) } }
+  async function save(e) { e.preventDefault(); try { await adminSaveTip({ ...edit, sort: Number(edit.sort) }); setEdit(null); load(); flash('Saved') } catch (ex) { flash(ex.message) } }
+  async function postNow() { setBusy(true); try { const r = await adminPostTipNow(); flash(r.posted ? `Posted: ${r.title}` : `Not posted: ${r.reason || r.error}`); load() } catch (ex) { flash(ex.message) } setBusy(false) }
+  const queue = tips.filter(t => t.active && !t.posted_at); const next = queue[0]; const posted = tips.filter(t => t.posted_at).length
+  const cats = Array.from(new Set(tips.map(t => t.category).filter(Boolean)))
+  const blank = () => ({ category: cats[0] || 'Mindset', title: '', body: '', sort: (Math.max(0, ...tips.map(t => t.sort)) + 1), active: true, posted_at: null })
+  const shown = showAll ? tips : queue.slice(0, 8)
+  return (
+    <div className="card glow-green" style={{ marginBottom: 14 }}>
+      <div className="row spread" style={{ flexWrap: 'wrap', gap: 10 }}>
+        <div><b>💡 Daily tip bot</b><div className="note">Posts one tip from the bank every day as the announcement popup. {queue.length} queued · {posted} posted · loops back to the start when it runs out.</div></div>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <label className="row" style={{ gap: 6, cursor: 'pointer' }}><input type="checkbox" checked={!!cfg.enabled} onChange={e => saveCfg({ ...cfg, enabled: e.target.checked })} /> On</label>
+          <select value={cfg.hour_et} onChange={e => saveCfg({ ...cfg, hour_et: Number(e.target.value) })} style={{ width: 'auto', padding: '6px 10px' }}>{HOURS.map(([h, l]) => <option key={h} value={h}>{l}</option>)}</select>
+          <button className="btn sm" disabled={busy || !tips.length} onClick={postNow}>{busy ? 'Posting…' : 'Post next now'}</button>
+          <button className="btn sm primary" onClick={() => setEdit(blank())}>+ Add tip</button>
+        </div>
+      </div>
+      {next && <div className="note" style={{ marginTop: 10 }}>Next up: <b style={{ color: 'var(--fg)' }}>{next.title}</b> — {next.body}</div>}
+      {edit && <form onSubmit={save} className="card" style={{ marginTop: 12, background: 'var(--glass-2)' }}>
+        <div className="grid2">
+          <div><label className="f">Title</label><input type="text" value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} placeholder="Send 20 before you check results" required /></div>
+          <div className="grid2"><div><label className="f">Category</label><input type="text" list="tipcats" value={edit.category} onChange={e => setEdit({ ...edit, category: e.target.value })} /><datalist id="tipcats">{cats.map(c => <option key={c} value={c} />)}</datalist></div><div><label className="f">Order</label><input type="number" value={edit.sort} onChange={e => setEdit({ ...edit, sort: e.target.value })} /></div></div>
+        </div>
+        <div style={{ marginTop: 8 }}><label className="f">Tip</label><textarea value={edit.body} onChange={e => setEdit({ ...edit, body: e.target.value })} placeholder="Two or three sentences. Plain, direct, something a student can do today." style={{ minHeight: 70 }} required /></div>
+        <div className="row" style={{ gap: 8, marginTop: 10 }}><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setEdit(null)}>Cancel</button>{edit.id && edit.posted_at && <button type="button" className="btn" onClick={async () => { await adminSaveTip({ id: edit.id, posted_at: null }); setEdit(null); load() }}>Put back in queue</button>}</div>
+      </form>}
+      <div className="list" style={{ marginTop: 12 }}>
+        {shown.map(t => <div key={t.id} className="coachrow" style={{ gridTemplateColumns: '44px minmax(0,1fr) auto', padding: '10px 0' }}>
+          <span className="note num" style={{ paddingTop: 2 }}>{t.sort}</span>
+          <div style={{ minWidth: 0 }}><b>{t.title}</b> <span className="pill" style={{ marginLeft: 6 }}>{t.category}</span>{t.posted_at && <span className="note"> · posted {new Date(t.posted_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>}{!t.active && <span className="note"> · off</span>}<div className="note">{t.body}</div></div>
+          <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setEdit({ ...t })}>Edit</button><button className="btn sm" onClick={async () => { await adminSaveTip({ id: t.id, active: !t.active }); load() }}>{t.active ? 'Skip' : 'Enable'}</button><button className="btn sm" onClick={async () => { if (confirm('Delete this tip?')) { await adminDeleteTip(t.id); load() } }}>Delete</button></div>
+        </div>)}
+      </div>
+      <div className="row" style={{ gap: 10, marginTop: 8 }}><button className="btn sm" onClick={() => setShowAll(v => !v)}>{showAll ? 'Show next 8 only' : `Show all ${tips.length} tips`}</button><span className="note">{msg}</span></div>
     </div>
   )
 }

@@ -425,3 +425,5 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .ic img{width:70%;height:70%;object-fit:contain;border-radius:8px}
 .gate.onboard{background:rgba(4,6,12,.5);backdrop-filter:blur(9px)}
 .cal-col.today{background:linear-gradient(180deg,rgba(34,227,107,.12),rgba(34,227,107,.03))}
+.ann.tip{background:linear-gradient(160deg,rgba(245,198,82,.14),rgba(13,19,34,.96) 45%);border-color:rgba(245,198,82,.4);box-shadow:0 24px 60px rgba(0,0,0,.6),0 0 40px rgba(245,198,82,.12)}
+.ann.tip .ann-eyebrow{color:var(--gold)}

@@ -273,3 +273,15 @@ export async function adminSaveAchievement(a) {
   const { error } = await supabase.from('achievements').upsert(a, { onConflict: 'key' }); if (error) throw error
 }
 export async function adminDeleteAchievement(key) { const { error } = await supabase.from('achievements').delete().eq('key', key); if (error) throw error }
+
+// ---------- daily tip bot ----------
+export async function loadTips() { const { data } = await supabase.from('tips').select('*').order('sort'); return data || [] }
+export async function adminSaveTip(t) { const { id, ...rest } = t; if (id) { const { error } = await supabase.from('tips').update(rest).eq('id', id); if (error) throw error } else { const { error } = await supabase.from('tips').insert(rest); if (error) throw error } }
+export async function adminDeleteTip(id) { await supabase.from('tips').delete().eq('id', id) }
+export async function adminSaveSetting(key, value) { const { error } = await supabase.from('settings').upsert({ key, value }, { onConflict: 'key' }); if (error) throw error }
+export async function adminPostTipNow() {
+  if (DEMO) { const t = (await loadTips()).find(x => !x.posted_at && x.active); if (!t) return { posted: false, reason: 'no tips' }; await supabase.from('tips').update({ posted_at: new Date().toISOString() }).eq('id', t.id); await supabase.from('announcements').insert({ title: t.title, body: t.body, kind: 'tip', active: true, created_at: new Date().toISOString() }); return { posted: true, title: t.title } }
+  const { data: { session } } = await supabase.auth.getSession()
+  const r = await fetch('/.netlify/functions/tip-now', { method: 'POST', headers: { authorization: `Bearer ${session.access_token}` } })
+  return r.json()
+}
