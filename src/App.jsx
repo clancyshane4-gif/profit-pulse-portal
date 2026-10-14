@@ -31,6 +31,8 @@ export default function App() {
   const [profile, setProfile] = useState(null)
   const [settings, setSettings] = useState({})
   const [recovery, setRecovery] = useState(false)
+  const [previewStudent, setPreviewStudent] = useState(() => { try { return sessionStorage.getItem('pp_preview') === '1' } catch { return false } })
+  const togglePreview = () => { const v = !previewStudent; setPreviewStudent(v); try { sessionStorage.setItem('pp_preview', v ? '1' : '0') } catch {} }
   const location = useLocation()
 
   const refreshProfile = useCallback(async () => {
@@ -64,9 +66,10 @@ export default function App() {
   if (!profile) return <div className="center"><span className="note">Loading your profile…</span></div>
   if (profile.active === false) return <div className="center"><div className="card" style={{ maxWidth: 420 }}><b>This account is disabled.</b><p className="muted">Message your coach in Discord if you think that's a mistake.</p><button className="btn" onClick={() => supabase.auth.signOut()}>Sign out</button></div></div>
 
-  const isAdmin = profile.role === 'admin' || profile.role === 'coach'
-  const isStaff = isAdmin || profile.role === 'setter'
-  const ctx = { session, user: session.user, profile, setProfile, refreshProfile, settings, isAdmin, isStaff }
+  const realAdmin = profile.role === 'admin' || profile.role === 'coach'
+  const isAdmin = realAdmin && !previewStudent
+  const isStaff = (isAdmin || profile.role === 'setter') && !previewStudent
+  const ctx = { session, user: session.user, profile, setProfile, refreshProfile, settings, isAdmin, isStaff, realAdmin, previewStudent, togglePreview }
   if (profile.must_change_password) return <Ctx.Provider value={ctx}><ChangePassword /></Ctx.Provider>
 
   return (

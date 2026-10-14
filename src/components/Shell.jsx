@@ -24,7 +24,7 @@ const NAV = [
 ]
 
 export default function Shell({ children }) {
-  const { profile, isAdmin, isStaff, settings } = useApp()
+  const { profile, isAdmin, isStaff, settings, realAdmin, previewStudent, togglePreview } = useApp()
   const nav = useNavigate(); const loc = useLocation()
   const items = [...NAV, ...(isStaff ? [['/rep', 'Rep panel', 'rep']] : []), ...(isAdmin ? [['/admin', 'Admin', 'admin']] : [])]
   const Brand = () => (
@@ -41,6 +41,7 @@ export default function Shell({ children }) {
             </NavLink>
           ))}
         </nav>
+        {realAdmin && <button className={`preview-toggle ${previewStudent ? 'on' : ''}`} onClick={togglePreview} title="See the portal exactly as a student does: locks, hidden phases, no admin tabs">{previewStudent ? '👁 Viewing as student · switch back' : '👁 View as student'}</button>}
         <div className="me">
           <Avatar name={profile.name} url={profile.photo_url} />
           <div style={{ minWidth: 0, flex: 1 }}><b>{profile.name || 'Member'}</b><small>{{ student: 'Student', setter: 'Rep', coach: 'Coach', admin: 'Admin' }[profile.role] || profile.role}</small></div>

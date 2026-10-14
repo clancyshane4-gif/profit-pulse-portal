@@ -376,3 +376,7 @@ label.f{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .win.big{border-color:rgba(245,198,82,.4);background:linear-gradient(160deg,rgba(245,198,82,.14),var(--glass-2))}
 .win .note{font-size:11.5px}
 code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:5px}
+
+.preview-toggle{margin:0 12px 8px;padding:9px 12px;border-radius:10px;border:1px dashed var(--line-2);background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;text-align:left}
+.preview-toggle:hover{color:var(--fg);border-color:var(--green)}
+.preview-toggle.on{background:rgba(245,198,82,.12);border:1px solid rgba(245,198,82,.45);color:var(--gold)}
