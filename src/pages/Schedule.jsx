@@ -21,9 +21,10 @@ export default function Schedule() {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const weekStart = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - d.getDay() + offset * 7); return d }, [offset])
   const items = events.map(ev => { const { start, end } = occurrence(weekStart, ev); return { ev, start, end, day: start.getDay(), top: start.getHours() * 60 + start.getMinutes(), len: ev.duration_min } })
-  const minH = Math.max(0, Math.min(9, ...items.map(i => Math.floor(i.top / 60)))) ; const maxH = Math.min(24, Math.max(18, ...items.map(i => Math.ceil((i.top + i.len) / 60)) ) + 0)
+  // full working day: 8 AM to 11 PM (stretches if a call falls outside)
+  const minH = Math.max(0, Math.min(8, ...items.map(i => Math.floor(i.top / 60)))); const maxH = Math.min(24, Math.max(23, ...items.map(i => Math.ceil((i.top + i.len) / 60))))
   const hours = []; for (let h = minH; h < maxH; h++) hours.push(h)
-  const PX = 64 // px per hour
+  const PX = 44 // px per hour
   const now = new Date(); const nowTop = (now.getHours() * 60 + now.getMinutes() - minH * 60) / 60 * PX
   const inWeek = now >= weekStart && now < new Date(weekStart.getTime() + 7 * 864e5)
   const fmtRange = () => { const e = new Date(weekStart); e.setDate(e.getDate() + 6); const o = { month: 'short', day: 'numeric' }; return `${weekStart.toLocaleDateString([], o)} – ${e.toLocaleDateString([], { ...o, year: 'numeric' })}` }
@@ -39,7 +40,7 @@ export default function Schedule() {
             {hours.map(h => <div key={h} className="cal-line" style={{ top: (h - minH) * PX }} />)}
             {inWeek && now.getDay() === di && <div className="cal-now" style={{ top: nowTop }} />}
             {items.filter(i => i.day === di).map(i => <button key={i.ev.id} className="cal-ev" style={{ top: (i.top - minH * 60) / 60 * PX, height: i.len / 60 * PX - 4, '--c': i.ev.color }} onClick={e => { e.stopPropagation(); setOpen(open?.ev.id === i.ev.id ? null : i) }}>
-              <b>{i.ev.title}</b><small>{i.ev.coach}</small><small>{fmtTime(i.start)}</small>
+              <b>{i.ev.title}</b><small>{fmtTime(i.start)} · {i.ev.coach}</small>
               {open?.ev.id === i.ev.id && <div className="cal-pop" onClick={e => e.stopPropagation()}>
                 <b style={{ fontSize: 15 }}>{i.ev.coach} — {i.ev.title}</b>
                 <div className="note" style={{ margin: '6px 0' }}>📅 {i.start.toLocaleDateString([], { month: 'short', day: 'numeric' })} &nbsp; 🕐 {fmtTime(i.start)} – {fmtTime(i.end)} · {i.ev.duration_min} min</div>

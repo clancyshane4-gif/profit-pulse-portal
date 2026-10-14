@@ -27,17 +27,17 @@ export default function LivePop() {
   const hoursAway = (next.start - now) / 36e5
   if (!live && hoursAway > SOON_HOURS) return null
   const close = () => setDismissed(d => [...d, key])
-  const time = next.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  const time = next.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
   const today = next.start.toDateString() === now.toDateString()
   const mins = Math.round(hoursAway * 60)
-  const when = live ? 'Live now' : mins < 60 ? `Starts in ${mins} min` : today ? `Today at ${time}` : `Tomorrow at ${time}`
+  const when = live ? 'Live now' : mins < 60 ? `Starts in ${mins} min` : today ? `Today, ${time}` : `Tomorrow, ${time}`
   const coach = next.ev.coach || 'your coach'
   return (
     <div className={`ann ${live ? 'live' : 'soon'}`} role="status">
       <button className="ann-x" onClick={close} aria-label="Dismiss">✕</button>
-      <div className="ann-eyebrow">{live ? <><span className="livedot" />{coach} is live</> : '📅 Live class'}</div>
-      <b className="ann-title">{live ? `${next.ev.title} is happening right now` : `${next.ev.title} · ${when}`}</b>
-      <p className="ann-body open">{live ? `${coach} is on. Jump in, bring your questions and your numbers.` : `${coach} goes live ${when.toLowerCase()}, shown in your time zone. ${next.ev.description ? next.ev.description.split('.')[0] + '.' : ''}`}</p>
+      <div className="ann-eyebrow">{live ? <><span className="livedot" />{coach} is live</> : `📅 Live class · ${coach}`}</div>
+      <b className="ann-title">{live ? `${next.ev.title} is live now` : `${next.ev.title} · ${when}`}</b>
+      {live && <p className="ann-body open">{coach} is on. Jump in.</p>}
       <div className="row" style={{ gap: 10, marginTop: 10 }}>
         {next.ev.join_url ? <a className="btn sm primary" href={next.ev.join_url} target="_blank" rel="noopener">{live ? 'Join now' : 'Get the link'} ↗</a> : <Link className="btn sm primary" to="/schedule" onClick={close}>See schedule</Link>}
         {!live && <button className="btn sm" onClick={close}>Got it</button>}
