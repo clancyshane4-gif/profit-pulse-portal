@@ -21,7 +21,7 @@ export default function Courses() {
   const Card = ({ p }) => { const ls = lessonsOf(p); const d = ls.filter(m => prog[m.id]).length; const pct = ls.length ? Math.round(d / ls.length * 100) : 0; const lk = lockedPhase(p); return (
     <div className={`phase ${lk ? 'locked' : ''}`} style={{ '--c': p.color }} role="button" tabIndex={0} onClick={() => !lk && nav(`/courses/${p.id}`)} onKeyDown={e => e.key === 'Enter' && !lk && nav(`/courses/${p.id}`)}>
       <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
-        <div className="pic"><Icon name={lk ? 'lock' : p.icon} size={26} color={p.color} /></div>
+        <div className="pic"><Icon name={p.icon} size={26} color={p.color} style={lk ? { filter: 'grayscale(.6)', opacity: .8 } : undefined} /></div>
         <div style={{ minWidth: 0 }}><div className="ph" style={{ color: p.color }}>{p.group_key === 'bonus' ? 'Bonus' : `Phase ${p.sort}`}</div><h3>{p.title}</h3></div>
       </div>
       {lk ? <div className="locked-body"><p>{p.description}</p><div className="row" style={{ gap: 8, fontSize: 12.5, color: 'var(--muted)', marginTop: 'auto' }}><span>🔒</span><span>{unlockHint(p)}</span><span className="num" style={{ marginLeft: 'auto' }}>{ls.length} lessons</span></div></div>

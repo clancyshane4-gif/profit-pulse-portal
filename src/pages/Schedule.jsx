@@ -4,7 +4,7 @@ import { loadEvents } from '../lib/data'
 const ET = 'America/New_York'
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 // Convert an Eastern "weekday + HH:MM" to a real Date in the viewer's week, then read back local weekday/minutes
-function occurrence(weekStart, ev) {
+export function occurrence(weekStart, ev) {
   const d = new Date(weekStart); d.setDate(d.getDate() + ev.weekday)
   const [h, mi] = ev.start_time.split(':').map(Number)
   // find the UTC instant for that ET wall-clock time

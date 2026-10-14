@@ -5,9 +5,12 @@ import Avatar from './Avatar'
 const VERB = { niche: 'picked a niche', offer: 'wrote their offer', dashboard: 'built their client dashboard', website: 'launched an AI website', agent: 'set up a super agent', adaccount: 'set up an ad account', proposal: 'built a client proposal', out50: 'did 50 outreaches', out100: 'did 100 outreaches', out200: 'did 200+ outreaches', call: 'booked a sales call', client: 'signed their first client', firstdollar: 'earned their first dollar', k1: 'hit $1,000 earned', k5: 'hit $5,000 earned', k10: 'hit $10,000 earned' }
 const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 3600) return `${Math.max(1, Math.round(s / 60))}m ago`; if (s < 86400) return `${Math.round(s / 3600)}h ago`; return `${Math.round(s / 86400)}d ago` }
 
+// take newest wins but rotate through people, so the row shows the whole bootcamp
+function spread(ws, n) { const by = new Map(); ws.forEach(w => { const k = w.profile_id || w.name; if (!by.has(k)) by.set(k, []); by.get(k).push(w) }); const q = [...by.values()]; const out = []; while (out.length < n && q.some(a => a.length)) { for (const a of q) { if (a.length && out.length < n) out.push(a.shift()) } } return out }
+
 export default function WinsFeed() {
   const [wins, setWins] = useState(null)
-  useEffect(() => { loadWins().then(setWins) }, [])
+  useEffect(() => { loadWins(40).then(ws => setWins(spread(ws, 12))) }, [])
   return (
     <div className="card span12 wins">
       <div className="row spread" style={{ marginBottom: 12 }}><b>Wins</b><span className="note">approved results from the whole bootcamp</span></div>

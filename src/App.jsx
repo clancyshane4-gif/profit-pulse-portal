@@ -5,6 +5,8 @@ import { loadMyProfile, loadSettings } from './lib/data'
 import Shell from './components/Shell'
 import Announcement from './components/Announcement'
 import ApprovalPop from './components/ApprovalPop'
+import LivePop from './components/LivePop'
+import SupportChat from './components/SupportChat'
 import Login from './pages/Login'
 import SetPassword from './pages/SetPassword'
 import OnboardingGate from './pages/OnboardingGate'
@@ -18,6 +20,7 @@ import Challenge from './pages/Challenge'
 import MemberMap from './pages/MemberMap'
 import Achievements from './pages/Achievements'
 import Resources from './pages/Resources'
+import Affiliate from './pages/Affiliate'
 import Schedule from './pages/Schedule'
 import Onboarding from './pages/Onboarding'
 import Admin from './pages/Admin'
@@ -76,8 +79,8 @@ export default function App() {
   return (
     <Ctx.Provider value={ctx}>
       {!profile.onboarded && <OnboardingGate />}
-      {profile.onboarded && <Announcement />}
-      {profile.onboarded && <ApprovalPop />}
+      {profile.onboarded && <div className="popstack"><LivePop /><ApprovalPop /><Announcement /></div>}
+      {profile.onboarded && <SupportChat />}
       <Shell>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -90,6 +93,7 @@ export default function App() {
           <Route path="/map" element={<MemberMap />} />
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/affiliate" element={<Affiliate />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/onboarding" element={<Onboarding />} />
           {isStaff && <Route path="/rep" element={<Rep />} />}

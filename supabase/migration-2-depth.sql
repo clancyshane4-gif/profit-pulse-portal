@@ -23,13 +23,13 @@ drop policy if exists "phases admin write" on public.phases;
 create policy "phases admin write" on public.phases for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 insert into public.phases (id, sort, group_key, title, description, icon, color) values
-('p1', 1, 'core', 'Start Here', 'How the bootcamp works, who your coaches are, and getting set up on Base44 with your coach.', 'bulb', '#4f8cff'),
-('p2', 2, 'core', 'Niche & Offer', 'Pick a niche with money and pain, and shape an offer local businesses say yes to.', 'target', '#22e36b'),
-('p3', 3, 'core', 'Build The Software', 'Client dashboards, AI websites and super agents. The product you walk in with.', 'monitor', '#a78bfa'),
-('p4', 4, 'core', 'Ads & Brand', 'Full AI ad scripting, creatives and setup, plus the personal brand businesses trust.', 'megaphone', '#3dd6f5'),
-('p5', 5, 'core', 'Close The Deal', 'The pitch, the pricing model, and the Stripe + GHL setup to sign and bill your first client.', 'dollar', '#f5c652'),
-('p6', 6, 'core', 'Scale', 'The 30-day launch plan: from portfolio to paying clients in your first month.', 'chart', '#ff8a5c'),
-('pb', 7, 'bonus', 'Case Studies & Masterclass', 'Two students walk through their first months, plus the full live masterclass with Jakey.', 'star', '#f5c652')
+('p1', 1, 'core', 'Start Here', 'How the bootcamp works, who your coaches are, and getting set up on Base44 with your coach.', '🚀', '#4f8cff'),
+('p2', 2, 'core', 'Niche & Offer', 'Pick a niche with money and pain, and shape an offer local businesses say yes to.', '🎯', '#22e36b'),
+('p3', 3, 'core', 'Build The Software', 'Client dashboards, AI websites and super agents. The product you walk in with.', '🛠️', '#a78bfa'),
+('p4', 4, 'core', 'Ads & Brand', 'Full AI ad scripting, creatives and setup, plus the personal brand businesses trust.', '📣', '#3dd6f5'),
+('p5', 5, 'core', 'Close The Deal', 'The pitch, the pricing model, and the Stripe + GHL setup to sign and bill your first client.', '💰', '#f5c652'),
+('p6', 6, 'core', 'Scale', 'The 30-day launch plan: from portfolio to paying clients in your first month.', '📈', '#ff8a5c'),
+('pb', 7, 'bonus', 'Case Studies & Masterclass', 'Two students walk through their first months, plus the full live masterclass with Jakey.', '⭐', '#f5c652')
 on conflict (id) do nothing;
 
 update public.modules set phase_id = case id
@@ -81,8 +81,8 @@ create policy "events admin write" on public.events for all to authenticated usi
 insert into public.events (title, coach, description, weekday, start_time, duration_min, color, sort)
 select * from (values
   ('AI Integration', 'Coach Adriel', 'Setting up and running AI agents inside your business. Base44 builds, super agents, automations and live troubleshooting.', 1, time '17:00', 60, '#3dd6f5', 1),
-  ('Lead Gen', 'Coach Adriel', 'Outreach that books calls: lead scraping, Instagram and cold email agents, follow-up and pipeline reviews.', 3, time '19:00', 60, '#22e36b', 2),
-  ('Media Buying', 'Coach Adriel', 'Delivering results for clients: campaign structure, creatives, reading ad data and what to change.', 5, time '21:00', 60, '#a78bfa', 3),
+  ('Lead Gen', 'Coach Adriel', 'Outreach that books calls: lead scraping, Instagram and cold email agents, follow-up and pipeline reviews.', 3, time '18:00', 60, '#22e36b', 2),
+  ('Media Buying', 'Coach Adriel', 'Delivering results for clients: campaign structure, creatives, reading ad data and what to change.', 5, time '19:00', 60, '#a78bfa', 3),
   ('Q&A with Jake', 'Jake', 'Bring your builds, client replies and stuck points. Open floor.', 6, time '14:00', 60, '#f5c652', 4)
 ) as v(title, coach, description, weekday, start_time, duration_min, color, sort)
 where not exists (select 1 from public.events);

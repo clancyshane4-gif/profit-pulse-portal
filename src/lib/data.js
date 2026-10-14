@@ -285,3 +285,18 @@ export async function adminPostTipNow() {
   const r = await fetch('/.netlify/functions/tip-now', { method: 'POST', headers: { authorization: `Bearer ${session.access_token}` } })
   return r.json()
 }
+
+// ---------- support chat ----------
+export async function loadSupportThread(userId) { const { data } = await supabase.from('support_messages').select('*').eq('profile_id', userId).order('created_at'); return data || [] }
+export async function sendSupport(userId, authorId, body, fromStaff = false) {
+  const { error } = await supabase.from('support_messages').insert({ profile_id: userId, author_id: authorId, body, from_staff: fromStaff }); if (error) throw error
+  if (!DEMO && !fromStaff) { try { const { data: { session } } = await supabase.auth.getSession(); fetch('/.netlify/functions/support-notify', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ body }) }) } catch {} }
+}
+export async function markSupportRead(userId, fromStaff) { await supabase.from('support_messages').update({ read_at: new Date().toISOString() }).eq('profile_id', userId).eq('from_staff', fromStaff).is('read_at', null) }
+export async function adminLoadSupportInbox() {
+  const { data } = await supabase.from('support_messages').select('*').order('created_at', { ascending: false }).limit(500)
+  const threads = new Map(); (data || []).forEach(m => { const t = threads.get(m.profile_id) || { profile_id: m.profile_id, last: m, unread: 0, msgs: [] }; t.msgs.unshift(m); if (!m.from_staff && !m.read_at) t.unread++; threads.set(m.profile_id, t) })
+  const ids = [...threads.keys()]; if (!ids.length) return []
+  const { data: profs } = await supabase.from('profiles').select('id,name,email,photo_url').in('id', ids)
+  return [...threads.values()].map(t => ({ ...t, profile: (profs || []).find(p => p.id === t.profile_id) || {} })).sort((a, b) => (b.unread - a.unread) || (new Date(b.last.created_at) - new Date(a.last.created_at)))
+}

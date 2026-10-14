@@ -15,12 +15,13 @@ const ICON = {
   resources: 'M4 7h16v12H4zM4 7l2-3h12l2 3M9 12h6',
   onboarding: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
   admin: 'M3 20a7 7 0 0 1 14 0M10 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 4l4 2-4 2',
+  affiliate: 'M4 7h16v12H4zM4 11h16M12 7v12M8 7V5a2 2 0 0 1 4 0M12 5a2 2 0 0 1 4 0v2',
   rep: 'M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21a8 8 0 0 1 16 0M19 8l2 2 4-4',
 }
 const NAV = [
   ['/', 'Dashboard', 'dashboard'], ['/courses', 'Courses', 'courses'], ['/recordings', 'Recordings', 'recordings'], ['/schedule', 'Schedule', 'schedule'],
   ['/challenge', 'Challenge', 'challenge'], ['/leaderboard', 'Leaderboard', 'leaderboard'], ['/map', 'Map', 'map'],
-  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/onboarding', 'Onboarding', 'onboarding'],
+  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/affiliate', 'Affiliate tools', 'affiliate'], ['/onboarding', 'Onboarding', 'onboarding'],
 ]
 
 export default function Shell({ children }) {

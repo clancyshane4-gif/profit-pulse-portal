@@ -11,5 +11,6 @@ const P = {
   video: 'M3 7h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3zM15 10l6-3v10l-6-3', calendar: 'M4 5h16v15H4zM4 10h16M8 3v4M16 3v4', external: 'M14 4h6v6M20 4l-9 9M19 14v6H5V6h6',
 }
 export default function Icon({ name, size = 18, color = 'currentColor', style }) {
+  if (name && !P[name]) return <span style={{ fontSize: size * 0.95, lineHeight: 1, ...style }} aria-hidden>{name}</span>
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={style}><path d={P[name] || P.play} /></svg>
 }

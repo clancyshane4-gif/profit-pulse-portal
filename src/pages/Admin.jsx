@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest, loadTips, adminSaveTip, adminDeleteTip, adminSaveSetting, adminPostTipNow, loadSettings } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest, loadTips, adminSaveTip, adminDeleteTip, adminSaveSetting, adminPostTipNow, loadSettings, adminLoadSupportInbox, sendSupport, markSupportRead } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -9,7 +9,7 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['support', 'Support'], ['affiliate', 'Affiliate tools'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
       {tab === 'ach' && <AchievementsAdmin />}
@@ -17,6 +17,8 @@ export default function Admin() {
       {tab === 'calls' && <Calls />}
       {tab === 'recordings' && <RecordingsAdmin />}
       {tab === 'announce' && <Announcements />}
+      {tab === 'support' && <SupportInbox />}
+      {tab === 'affiliate' && <AffiliateAdmin />}
       {tab === 'auto' && <Automations />}
     </section>
   )
@@ -343,4 +345,58 @@ export function toEmbed(u) {
   if ((m = u.match(/loom\.com\/(?:share|embed)\/([a-f0-9]+)/i))) return `https://www.loom.com/embed/${m[1]}`
   if ((m = u.match(/iframe\.mediadelivery\.net\/(?:embed|play)\/(\d+)\/([\w-]+)/))) return `https://iframe.mediadelivery.net/embed/${m[1]}/${m[2]}`
   return u
+}
+
+
+function SupportInbox() {
+  const { user } = useApp(); const [threads, setThreads] = useState([]); const [sel, setSel] = useState(null); const [text, setText] = useState(''); const [busy, setBusy] = useState(false)
+  const [cfg, setCfg] = useState({ email: 'support@aiprofitpulse.com', auto_reply: '', hours: '' }); const [msg, setMsg] = useState('')
+  const load = () => adminLoadSupportInbox().then(t => { setThreads(t); if (sel) setSel(t.find(x => x.profile_id === sel.profile_id) || null) })
+  useEffect(() => { load(); loadSettings().then(s => { if (s.support) setCfg(c => ({ ...c, ...s.support })) }); const i = setInterval(load, 30000); return () => clearInterval(i) }, [])
+  async function open(t) { setSel(t); if (t.unread) { await markSupportRead(t.profile_id, false); load() } }
+  async function reply(e) { e.preventDefault(); if (!text.trim() || !sel) return; setBusy(true); try { await sendSupport(sel.profile_id, user.id, text.trim(), true); setText(''); await load() } catch (ex) { alert(ex.message) } setBusy(false) }
+  async function saveCfg(e) { e.preventDefault(); try { await adminSaveSetting('support', cfg); setMsg('Saved'); setTimeout(() => setMsg(''), 2000) } catch (ex) { setMsg(ex.message) } }
+  const unread = threads.reduce((n, t) => n + t.unread, 0)
+  return (<>
+    <div className="card" style={{ marginBottom: 14 }}>
+      <div className="row spread"><div><b>Support inbox</b><div className="note">Messages from the chat bubble students see. {unread ? `${unread} waiting for a reply.` : 'Nothing waiting.'}</div></div></div>
+      <div className="inbox" style={{ marginTop: 12 }}>
+        <div className="inbox-list">
+          {threads.map(t => <div key={t.profile_id} className={`inbox-row ${sel?.profile_id === t.profile_id ? 'on' : ''}`} onClick={() => open(t)}><Avatar name={t.profile.name} url={t.profile.photo_url} size={34} /><div style={{ minWidth: 0, flex: 1 }}><b>{t.profile.name || t.profile.email}</b><small>{t.last.from_staff ? 'You: ' : ''}{t.last.body}</small></div>{t.unread > 0 && <span className="fab-badge" style={{ position: 'static' }}>{t.unread}</span>}</div>)}
+          {!threads.length && <div className="note" style={{ padding: 10 }}>No messages yet.</div>}
+        </div>
+        <div className="inbox-thread">
+          {sel ? <>
+            <div className="row spread" style={{ marginBottom: 8 }}><b>{sel.profile.name}</b><a className="note" href={`mailto:${sel.profile.email}`}>{sel.profile.email}</a></div>
+            <div className="support-body" style={{ maxHeight: 420, border: '1px solid var(--line)', borderRadius: 14 }}>{sel.msgs.map(m => <div key={m.id} className={`msg ${m.from_staff ? 'me' : 'staff'}`}>{!m.from_staff && <b>{sel.profile.name?.split(' ')[0]}</b>}{m.body}<small>{new Date(m.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</small></div>)}</div>
+            <form className="support-form" style={{ padding: '10px 0 0' }} onSubmit={reply}><textarea value={text} onChange={e => setText(e.target.value)} placeholder="Reply as a coach…" rows={2} /><button className="btn primary sm" disabled={busy || !text.trim()}>Send</button></form>
+          </> : <div className="empty"><div className="ic">💬</div><b>Pick a conversation</b><span>Replies show up in the student's chat bubble and they get a red badge.</span></div>}
+        </div>
+      </div>
+    </div>
+    <form className="card" onSubmit={saveCfg}><b>Support settings</b>
+      <div className="grid2" style={{ marginTop: 10 }}>
+        <div><label className="f">Support email (notified on every new message, needs RESEND_API_KEY)</label><input type="email" value={cfg.email} onChange={e => setCfg({ ...cfg, email: e.target.value })} /></div>
+        <div><label className="f">Hours shown in the chat</label><input type="text" value={cfg.hours} onChange={e => setCfg({ ...cfg, hours: e.target.value })} placeholder="Mon–Fri, 9am–6pm ET" /></div>
+      </div>
+      <div style={{ marginTop: 8 }}><label className="f">Automatic reply (shown instantly after a student sends)</label><textarea value={cfg.auto_reply} onChange={e => setCfg({ ...cfg, auto_reply: e.target.value })} style={{ minHeight: 60 }} /></div>
+      <div className="row" style={{ gap: 10, marginTop: 10 }}><button className="btn primary">Save</button><span className="note">{msg}</span></div>
+    </form>
+  </>)
+}
+
+function AffiliateAdmin() {
+  const { settings } = useApp(); const [tools, setTools] = useState(settings.affiliate_tools || []); const [msg, setMsg] = useState('')
+  const F = ['Name', 'Description', 'Category', 'Affiliate link', 'Price', 'Commission', 'Logo domain']
+  const set = (i, j, v) => setTools(t => t.map((row, k) => k === i ? row.map((c, l) => l === j ? v : c) : row))
+  async function save() { try { await adminSaveSetting('affiliate_tools', tools); setMsg('Saved. Students see it on refresh.'); setTimeout(() => setMsg(''), 3000) } catch (ex) { setMsg(ex.message) } }
+  return (
+    <div className="card"><div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><div><b>Affiliate tools</b><div className="note">Paid tools on the Affiliate tools page. Paste your affiliate links here; the logo pulls from the domain.</div></div><div className="row" style={{ gap: 8 }}><button className="btn sm" onClick={() => setTools(t => [...t, ['', '', 'Builder', 'https://', '', '', '']])}>+ Add tool</button><button className="btn sm primary" onClick={save}>Save all</button></div></div>
+      <div className="list" style={{ marginTop: 12 }}>{tools.map((row, i) => <div key={i} className="card" style={{ background: 'var(--glass-2)' }}>
+        <div className="grid2">{F.map((f, j) => <div key={f} style={j === 1 ? { gridColumn: 'span 2' } : {}}><label className="f">{f}</label>{j === 1 ? <textarea value={row[j] || ''} onChange={e => set(i, j, e.target.value)} style={{ minHeight: 48 }} /> : <input type="text" value={row[j] || ''} onChange={e => set(i, j, e.target.value)} />}</div>)}</div>
+        <div className="row" style={{ gap: 8, marginTop: 8 }}><button className="btn sm" onClick={() => setTools(t => t.filter((_, k) => k !== i))}>Remove</button>{i > 0 && <button className="btn sm" onClick={() => setTools(t => { const c = [...t]; [c[i - 1], c[i]] = [c[i], c[i - 1]]; return c })}>Move up</button>}</div>
+      </div>)}</div>
+      <div className="note" style={{ marginTop: 8 }}>{msg}</div>
+    </div>
+  )
 }

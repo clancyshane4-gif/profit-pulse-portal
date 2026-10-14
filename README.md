@@ -6,7 +6,7 @@ React + Vite frontend, Supabase (auth, Postgres, storage), hosted on Netlify. Ad
 
 ### 1. Supabase
 1. Create a project at supabase.com (free tier is fine to start).
-2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql`, `supabase/migration-4-wins.sql`, `supabase/migration-5-achievements.sql` and `supabase/migration-6-tips.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
+2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql`, `supabase/migration-4-wins.sql`, `supabase/migration-5-achievements.sql` `supabase/migration-6-tips.sql` and `supabase/migration-7-support-affiliate.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
 3. Authentication → Providers → Email: keep **Confirm email** on. Authentication → URL Configuration: set **Site URL** to your portal URL (e.g. `https://portal.profitpulsebootcamp.com`) and add `https://portal.profitpulsebootcamp.com/set-password` under **Redirect URLs**. Add `http://localhost:5173/set-password` too if you'll run it locally.
 4. (Recommended) Authentication → Email Templates → "Invite user": change the copy so it reads like it came from Jakey. Keep the `{{ .ConfirmationURL }}` link.
 5. Project Settings → API: copy the **Project URL**, **anon key**, and **service_role key**.
@@ -91,3 +91,13 @@ The invite function only runs on Netlify (or `netlify dev` with the Netlify CLI)
 - `supabase/tips.json` is the bank (84 tips across Mindset, Niche & Offer, Build, Outreach, Ads, Closing, Scale); migration 6 loads it into the `tips` table.
 - `netlify/functions/daily-tip.mjs` runs hourly and posts the next unposted tip as an announcement (`kind = 'tip'`) when the Eastern hour matches the setting. Loops back to the start when the bank is used up.
 - Admin → Announcements → **Daily tip bot**: on/off, hour (ET), "Post next now", add/edit/skip/delete tips, put a posted tip back in the queue.
+
+## Support chat
+- Green chat bubble bottom-right for students. Messages go to `support_messages`; the student sees the auto-reply instantly (text in Admin → Support → settings) and coach replies in the same bubble with a red badge.
+- Admin → **Support** is the inbox. Set `RESEND_API_KEY` in Netlify to also email every new message to the support address (default support@aiprofitpulse.com).
+
+## Affiliate tools
+- `/affiliate` lists paid tools with your affiliate links (setting `affiliate_tools`). Edit in Admin → **Affiliate tools**.
+
+## Live class popup
+- The dashboard shows the next call ("Today at 6:00 PM", countdown under an hour) and "Coach is live" during the call, with the join link from Admin → Call schedule. Dismiss hides that one occurrence.
