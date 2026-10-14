@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { loadEvents } from '../lib/data'
+import { useApp } from '../App'
 import { occurrence } from '../pages/Schedule'
 
 // Corner card for the next live class: "live now" during the call, "today at 6 PM" beforehand.
@@ -10,7 +11,7 @@ export default function LivePop() {
   const [events, setEvents] = useState([]); const [tick, setTick] = useState(0)
   const [dismissed, setDismissed] = useState([])
   useEffect(() => { loadEvents().then(setEvents); const t = setInterval(() => setTick(x => x + 1), 60000); return () => clearInterval(t) }, [])
-  const loc = useLocation()
+  const loc = useLocation(); const { settings } = useApp(); const join = next => next.ev.join_url || settings.default_join_url || ''
   const now = new Date()
   // occurrences this week and next, pick the first one that's live or upcoming
   const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - weekStart.getDay())
@@ -39,7 +40,7 @@ export default function LivePop() {
       <b className="ann-title">{live ? `${next.ev.title} is live now` : `${next.ev.title} · ${when}`}</b>
       {live && <p className="ann-body open">{coach} is on. Jump in.</p>}
       <div className="row" style={{ gap: 10, marginTop: 10 }}>
-        {next.ev.join_url ? <a className="btn sm primary" href={next.ev.join_url} target="_blank" rel="noopener">{live ? 'Join now' : 'Get the link'} ↗</a> : <Link className="btn sm primary" to="/schedule" onClick={close}>See schedule</Link>}
+        {join(next) ? <a className="btn sm primary" href={join(next)} target="_blank" rel="noopener">{live ? 'Join on Google Meet' : 'Google Meet link'} ↗</a> : <Link className="btn sm primary" to="/schedule" onClick={close}>See schedule</Link>}
         {!live && <button className="btn sm" onClick={close}>Got it</button>}
       </div>
     </div>

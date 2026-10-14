@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadEvents } from '../lib/data'
+import { useApp } from '../App'
 
 const ET = 'America/New_York'
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -13,9 +14,11 @@ export function occurrence(weekStart, ev) {
   const start = new Date(guess.getTime() - etOffset(guess))
   return { start, end: new Date(start.getTime() + ev.duration_min * 60000) }
 }
+const MeetIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden><rect x="3" y="6" width="12" height="12" rx="2" fill="#00832d"/><path d="M15 10l6-3v10l-6-3z" fill="#0066da"/><rect x="3" y="6" width="6" height="6" fill="#ffba00"/><rect x="3" y="12" width="6" height="6" fill="#e94235"/></svg>
 const fmtTime = d => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 
 export default function Schedule() {
+  const { settings } = useApp(); const defaultJoin = settings.default_join_url || ''
   const [events, setEvents] = useState([]); const [offset, setOffset] = useState(0); const [open, setOpen] = useState(null)
   useEffect(() => { loadEvents().then(setEvents) }, [])
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -46,7 +49,7 @@ export default function Schedule() {
                 <div className="note" style={{ margin: '6px 0' }}>📅 {i.start.toLocaleDateString([], { month: 'short', day: 'numeric' })} &nbsp; 🕐 {fmtTime(i.start)} – {fmtTime(i.end)} · {i.ev.duration_min} min</div>
                 <div className="note">Repeats weekly</div>
                 <p className="muted" style={{ fontSize: 13, margin: '10px 0' }}>{i.ev.description}</p>
-                {i.ev.join_url ? <a className="btn sm primary" href={i.ev.join_url} target="_blank" rel="noopener">Join call ↗</a> : <span className="note">Join link is posted in Discord 15 minutes before.</span>}
+                {(i.ev.join_url || defaultJoin) ? <a className="btn sm primary meet" href={i.ev.join_url || defaultJoin} target="_blank" rel="noopener"><MeetIcon /> Join on Google Meet</a> : <button className="btn sm meet" disabled title="Add the Meet link in Admin → Call schedule"><MeetIcon /> Google Meet link coming</button>}
               </div>}
             </button>)}
           </div>)}

@@ -480,3 +480,4 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .ann.soon .btn.primary{background:linear-gradient(180deg,#5fe0f7,#22bfe0);color:#04202a;box-shadow:0 8px 24px rgba(61,214,245,.3)}
 .ann.live .btn.primary{background:linear-gradient(180deg,#ff6b6b,#e03a3a);color:#fff;box-shadow:0 8px 24px rgba(239,68,68,.35)}
 .avatar-btn{border:0;background:transparent;padding:0;cursor:pointer;border-radius:50%;position:relative}.avatar-btn::after{content:'✎';position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;background:var(--green);color:var(--green-ink);font-size:9px;display:grid;place-items:center;border:2px solid var(--bg)}
+.btn.meet{gap:8px}.btn.meet svg{flex:0 0 auto}

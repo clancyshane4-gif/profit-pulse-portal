@@ -290,11 +290,14 @@ function DailyTip() {
 
 const WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 function Calls() {
-  const [evs, setEvs] = useState([]); const [edit, setEdit] = useState(null); const [msg, setMsg] = useState('')
+  const [evs, setEvs] = useState([]); const [edit, setEdit] = useState(null); const [msg, setMsg] = useState(''); const [meet, setMeet] = useState('')
+  useEffect(() => { loadSettings().then(s => setMeet(s.default_join_url || '')) }, [])
+  async function saveMeet(e) { e.preventDefault(); try { await adminSaveSetting('default_join_url', meet.trim()); setMsg('Meet link saved'); setTimeout(() => setMsg(''), 2000) } catch (ex) { setMsg(ex.message) } }
   const load = () => loadEvents().then(setEvs); useEffect(() => { load() }, [])
   const blank = { title: '', coach: '', description: '', weekday: 1, start_time: '19:00', duration_min: 60, color: '#22e36b', join_url: '', active: true, sort: evs.length + 1 }
   async function save(e) { e.preventDefault(); try { await adminSaveEvent({ ...edit, weekday: Number(edit.weekday), duration_min: Number(edit.duration_min) }); setEdit(null); load(); setMsg('Saved'); setTimeout(() => setMsg(''), 2000) } catch (ex) { setMsg(ex.message) } }
   return (
+    <><form className="card glow-green" style={{ marginBottom: 14 }} onSubmit={saveMeet}><b>Google Meet link</b><div className="note">Used by every call's Join button and the live-class popup unless a call has its own link below.</div><div className="row" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}><input type="url" value={meet} onChange={e => setMeet(e.target.value)} placeholder="https://meet.google.com/abc-defg-hij" style={{ flex: 1, minWidth: 260 }} /><button className="btn primary">Save</button></div></form>
     <div className="card"><div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><div><b>Weekly calls</b><div className="note">Times are Eastern. Students see them converted to their own timezone.</div></div><button className="btn sm primary" onClick={() => setEdit(blank)}>+ Add call</button></div>
       {edit && <form onSubmit={save} className="grid" style={{ gridTemplateColumns: 'repeat(6, minmax(0,1fr))', gap: 8, marginTop: 14, alignItems: 'end' }}>
         <div style={{ gridColumn: 'span 2' }}><label className="f">Title</label><input type="text" value={edit.title} onChange={e => setEdit({ ...edit, title: e.target.value })} required /></div>
@@ -310,7 +313,7 @@ function Calls() {
       {evs.map(ev => <div key={ev.id} className="coachrow" style={{ gridTemplateColumns: '14px minmax(0,1fr) auto' }}><span style={{ width: 12, height: 12, borderRadius: 4, background: ev.color, marginTop: 4 }} /><div><b>{ev.title}</b> <span className="note">· {ev.coach} · {WD[ev.weekday]} {ev.start_time.slice(0, 5)} ET · {ev.duration_min} min{ev.join_url ? '' : ' · no join link yet'}</span><div className="note">{ev.description}</div></div>
         <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setEdit({ ...ev, start_time: ev.start_time.slice(0, 5) })}>Edit</button><button className="btn sm" onClick={async () => { await adminDeleteEvent(ev.id); load() }}>Delete</button></div></div>)}
       <div className="note" style={{ marginTop: 8 }}>{msg}</div>
-    </div>
+    </div></>
   )
 }
 
