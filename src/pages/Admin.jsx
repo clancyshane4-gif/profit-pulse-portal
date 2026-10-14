@@ -9,7 +9,7 @@ export default function Admin() {
   return (
     <section className="page">
       <div className="head"><div><h1>Admin</h1><p>Manage members and roles, approve proof, and manage module videos. Reps add students from the Rep panel.</p></div></div>
-      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['support', 'Support'], ['affiliate', 'Affiliate tools'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{[['members', 'Members'], ['review', 'Pending reviews'], ['ach', 'Achievements'], ['modules', 'Lessons & videos'], ['calls', 'Call schedule'], ['recordings', 'Recordings'], ['announce', 'Announcements'], ['support', 'Support'], ['affiliate', 'Affiliate tools'], ['resources', 'Resources'], ['auto', 'Automations']].map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === 'members' && <Members />}
       {tab === 'review' && <Review />}
       {tab === 'ach' && <AchievementsAdmin />}
@@ -19,6 +19,7 @@ export default function Admin() {
       {tab === 'announce' && <Announcements />}
       {tab === 'support' && <SupportInbox />}
       {tab === 'affiliate' && <AffiliateAdmin />}
+      {tab === 'resources' && <ResourcesAdmin />}
       {tab === 'auto' && <Automations />}
     </section>
   )
@@ -395,6 +396,23 @@ function AffiliateAdmin() {
       <div className="list" style={{ marginTop: 12 }}>{tools.map((row, i) => <div key={i} className="card" style={{ background: 'var(--glass-2)' }}>
         <div className="grid2">{F.map((f, j) => <div key={f} style={j === 1 ? { gridColumn: 'span 2' } : {}}><label className="f">{f}</label>{j === 1 ? <textarea value={row[j] || ''} onChange={e => set(i, j, e.target.value)} style={{ minHeight: 48 }} /> : <input type="text" value={row[j] || ''} onChange={e => set(i, j, e.target.value)} />}</div>)}</div>
         <div className="row" style={{ gap: 8, marginTop: 8 }}><button className="btn sm" onClick={() => setTools(t => t.filter((_, k) => k !== i))}>Remove</button>{i > 0 && <button className="btn sm" onClick={() => setTools(t => { const c = [...t]; [c[i - 1], c[i]] = [c[i], c[i - 1]]; return c })}>Move up</button>}</div>
+      </div>)}</div>
+      <div className="note" style={{ marginTop: 8 }}>{msg}</div>
+    </div>
+  )
+}
+
+
+function ResourcesAdmin() {
+  const { settings } = useApp(); const [rows, setRows] = useState(settings.resources || []); const [msg, setMsg] = useState('')
+  const F = ['Name', 'Description', 'Category', 'Link']
+  const set = (i, j, v) => setRows(t => t.map((row, k) => k === i ? row.map((c, l) => l === j ? v : c) : row))
+  async function save() { try { await adminSaveSetting('resources', rows); setMsg('Saved. Students see it on refresh.'); setTimeout(() => setMsg(''), 3000) } catch (ex) { setMsg(ex.message) } }
+  return (
+    <div className="card"><div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><div><b>Resources</b><div className="note">The free tools list on the Resources page. The logo comes from the link's domain automatically.</div></div><div className="row" style={{ gap: 8 }}><button className="btn sm" onClick={() => setRows(t => [...t, ['', '', 'AI & Automation', 'https://']])}>+ Add resource</button><button className="btn sm primary" onClick={save}>Save all</button></div></div>
+      <div className="list" style={{ marginTop: 12 }}>{rows.map((row, i) => <div key={i} className="card" style={{ background: 'var(--glass-2)' }}>
+        <div className="grid2">{F.map((f, j) => <div key={f} style={j === 1 ? { gridColumn: 'span 2' } : {}}><label className="f">{f}</label>{j === 1 ? <textarea value={row[j] || ''} onChange={e => set(i, j, e.target.value)} style={{ minHeight: 48 }} /> : <input type="text" value={row[j] || ''} onChange={e => set(i, j, e.target.value)} />}</div>)}</div>
+        <div className="row" style={{ gap: 8, marginTop: 8 }}><button className="btn sm" onClick={() => setRows(t => t.filter((_, k) => k !== i))}>Remove</button>{i > 0 && <button className="btn sm" onClick={() => setRows(t => { const c = [...t]; [c[i - 1], c[i]] = [c[i], c[i - 1]]; return c })}>Move up</button>}</div>
       </div>)}</div>
       <div className="note" style={{ marginTop: 8 }}>{msg}</div>
     </div>

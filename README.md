@@ -6,7 +6,7 @@ React + Vite frontend, Supabase (auth, Postgres, storage), hosted on Netlify. Ad
 
 ### 1. Supabase
 1. Create a project at supabase.com (free tier is fine to start).
-2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql`, `supabase/migration-4-wins.sql`, `supabase/migration-5-achievements.sql` `supabase/migration-6-tips.sql` and `supabase/migration-7-support-affiliate.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
+2. SQL Editor → New query → paste all of `supabase/schema.sql` → Run. Then do the same with `supabase/migration-2-depth.sql` `supabase/migration-3-announcements.sql`, `supabase/migration-4-wins.sql`, `supabase/migration-5-achievements.sql` `supabase/migration-6-tips.sql`, `supabase/migration-7-support-affiliate.sql` and `supabase/migration-8-resources.sql`. This creates every table, the leaderboard view, security rules, the `avatars` storage bucket, and seeds the 13 modules, achievements, schedule and challenge.
 3. Authentication → Providers → Email: keep **Confirm email** on. Authentication → URL Configuration: set **Site URL** to your portal URL (e.g. `https://portal.profitpulsebootcamp.com`) and add `https://portal.profitpulsebootcamp.com/set-password` under **Redirect URLs**. Add `http://localhost:5173/set-password` too if you'll run it locally.
 4. (Recommended) Authentication → Email Templates → "Invite user": change the copy so it reads like it came from Jakey. Keep the `{{ .ConfirmationURL }}` link.
 5. Project Settings → API: copy the **Project URL**, **anon key**, and **service_role key**.
