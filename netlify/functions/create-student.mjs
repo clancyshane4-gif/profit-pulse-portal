@@ -39,7 +39,11 @@ export default async (req) => {
     if (/already|exists|registered/i.test(error.message)) return json({ error: 'That email already has an account. Use "Reset password" to give them a new temporary one.' }, 409)
     return json({ error: error.message }, 400)
   }
-  await admin.from('profiles').update({ name, must_change_password: true, added_by: user.id }).eq('id', data.user.id)
+  // role: only admins may create staff; everyone else creates students
+  const wanted = String(body.role || 'student'); const role = caller.role === 'admin' && ['student', 'setter', 'coach', 'admin'].includes(wanted) ? wanted : 'student'
+  const patch = { name, must_change_password: true, added_by: user.id }; if (role !== 'student') patch.role = role
+  await admin.from('profiles').update(patch).eq('id', data.user.id)
+  if (role === 'admin') await admin.from('admin_emails').insert({ email }).then(() => {}, () => {})
   return json({ ok: true, email, password, id: data.user.id })
 }
 const json = (b, status = 200) => new Response(JSON.stringify(b), { status, headers: { 'content-type': 'application/json' } })

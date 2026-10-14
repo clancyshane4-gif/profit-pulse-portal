@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../App'
-import { adminLoadMembers, adminLoadPending, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
+import { adminLoadMembers, adminLoadPending, repCreateStudent, adminReviewV2, adminUpdateProfile, loadAchievements, adminSaveAchievement, adminDeleteAchievement, loadModules, adminUpdateModule, loadLeaderboard, loadPhases, loadEvents, adminSaveEvent, adminDeleteEvent, loadRecordings, adminSaveRecording, adminDeleteRecording, loadAnnouncements, adminSaveAnnouncement, adminDeleteAnnouncement, adminRunDigest } from '../lib/data'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
 
@@ -28,19 +28,48 @@ function Members() {
   useEffect(load, [])
   async function toggle(m) { await adminUpdateProfile(m.id, { active: !m.active }); load() }
   async function role(m, r) { await adminUpdateProfile(m.id, { role: r }); load() }
-  return (
+  const [nw, setNw] = useState({ name: '', email: '', role: 'student' }); const [busy, setBusy] = useState(false); const [result, setResult] = useState(null); const [err, setErr] = useState(''); const [copied, setCopied] = useState(false)
+  async function create(e) {
+    e.preventDefault(); setBusy(true); setErr(''); setResult(null); setCopied(false)
+    try { const r = await repCreateStudent(nw.email, nw.name, 'create', nw.role); setResult({ ...r, role: nw.role }); setNw({ name: '', email: '', role: 'student' }); load() } catch (ex) { setErr(ex.message) }
+    setBusy(false)
+  }
+  async function reset(m) { setErr(''); setResult(null); setCopied(false); try { setResult(await repCreateStudent(m.email, m.name, 'reset')) } catch (ex) { setErr(ex.message) } }
+  const handoff = result ? `Here's your Profit Pulse AI portal login.\nLink: ${location.origin}\nEmail: ${result.email}\nTemporary password: ${result.password}\nIt will ask you to set your own password the first time you sign in.` : ''
+  async function copy() { try { await navigator.clipboard.writeText(handoff); setCopied(true) } catch { setCopied(false) } }
+  const roleLabel = { student: 'Student', setter: 'Rep (setter)', coach: 'Coach', admin: 'Admin' }
+  return (<>
+    <form className="card" onSubmit={create} style={{ marginBottom: 14 }}><b>Add a member</b><div className="note">Creates the login and gives you a temporary password to send them. Reps can also add students from the Rep panel.</div>
+      <div className="grid2" style={{ marginTop: 12 }}>
+        <div><label className="f" htmlFor="aName">Name</label><input id="aName" type="text" value={nw.name} onChange={e => setNw({ ...nw, name: e.target.value })} placeholder="First and last" required /></div>
+        <div><label className="f" htmlFor="aEmail">Email</label><input id="aEmail" type="email" value={nw.email} onChange={e => setNw({ ...nw, email: e.target.value })} placeholder="person@email.com" autoComplete="off" required /></div>
+        <div><label className="f" htmlFor="aRole">Role</label><select id="aRole" value={nw.role} onChange={e => setNw({ ...nw, role: e.target.value })}>{Object.entries(roleLabel).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></div>
+      </div>
+      <div className="row" style={{ gap: 10, marginTop: 12, flexWrap: 'wrap' }}><button className="btn primary" disabled={busy}>{busy ? 'Creating…' : 'Create login'}</button><span className="err" style={{ minHeight: 0 }}>{err}</span></div>
+    </form>
+    {result && <div className="card" style={{ marginBottom: 14, borderColor: 'rgba(34,227,107,.35)' }}>
+      <div className="row spread" style={{ flexWrap: 'wrap', gap: 8 }}><b>{result.reset ? 'New temporary password' : `${roleLabel[result.role] || 'Login'} created`}</b><span className="pill">Shown once</span></div>
+      <div className="grid2" style={{ marginTop: 10 }}>
+        <div><div className="note">Email</div><div className="num" style={{ fontSize: 15 }}>{result.email}</div></div>
+        <div><div className="note">Temporary password</div><div className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{result.password}</div></div>
+      </div>
+      <div className="note" style={{ margin: '12px 0 6px' }}>Message to send them</div>
+      <textarea readOnly value={handoff} style={{ minHeight: 120 }} onFocus={e => e.target.select()} />
+      <div className="row" style={{ gap: 8, marginTop: 8 }}><button type="button" className="btn sm primary" onClick={copy}>{copied ? 'Copied' : 'Copy message'}</button></div>
+    </div>}
     <div className="card"><div className="row spread"><b>Members</b><span className="note">{list.length} total</span></div>
       {list.map(m => <div key={m.id} className="coachrow"><Avatar name={m.name} url={m.photo_url} /><div style={{ minWidth: 0 }}>
         <b>{m.name || '(no name yet)'}</b> <span className="note">· {m.email} · {m.city || 'no city'}{m.discord ? ` · @${m.discord}` : ''} · {board[m.id] ?? 0} pts · joined {new Date(m.created_at).toLocaleDateString()}</span>
         <div className="note">{m.must_change_password ? "Hasn't signed in yet" : m.onboarded ? 'Photo added' : 'Signed in, photo not added yet'}</div>
         <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
           {m.id !== user.id && <><button className="btn sm" onClick={() => toggle(m)}>{m.active ? 'Disable' : 'Enable'}</button>
-            <select value={m.role} onChange={e => role(m, e.target.value)} style={{ width: 'auto', padding: '6px 10px' }}><option value="student">Student</option><option value="setter">Rep (setter)</option><option value="coach">Coach</option><option value="admin">Admin</option></select></>}
+            <select value={m.role} onChange={e => role(m, e.target.value)} style={{ width: 'auto', padding: '6px 10px' }}><option value="student">Student</option><option value="setter">Rep (setter)</option><option value="coach">Coach</option><option value="admin">Admin</option></select>
+            <button className="btn sm" onClick={() => reset(m)}>Reset password</button></>}
         </div></div>
         <span className={`pill ${m.active ? (m.onboarded ? '' : 'warn') : 'grey'}`}>{!m.active ? 'Disabled' : m.onboarded ? 'Onboarded' : 'Incomplete'}</span></div>)}
       {!list.length && <div className="note" style={{ padding: '10px 0' }}>No members yet.</div>}
     </div>
-  )
+  </>)
 }
 
 function Review() {

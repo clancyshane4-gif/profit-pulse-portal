@@ -121,12 +121,12 @@ export async function adminUpdateProfile(id, patch) {
 export async function adminUpdateModule(id, patch) {
   const { error } = await supabase.from('modules').update(patch).eq('id', id); if (error) throw error
 }
-export async function repCreateStudent(email, name, action = 'create') {
+export async function repCreateStudent(email, name, action = 'create', role = 'student') {
   if (DEMO) return { ok: true, email, password: 'pulse-build-' + Math.floor(1000 + Math.random() * 9000), reset: action === 'reset' }
   const { data: { session } } = await supabase.auth.getSession()
   const r = await fetch('/.netlify/functions/create-student', {
     method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ email, name, action })
+    body: JSON.stringify({ email, name, action, role })
   })
   const j = await r.json().catch(() => ({}))
   if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`)

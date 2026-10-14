@@ -7,7 +7,7 @@
 create table if not exists public.admin_emails (
   email text primary key
 );
-insert into public.admin_emails (email) values ('scalewdrew@gmail.com') on conflict do nothing;
+insert into public.admin_emails (email) values ('scalewdrew@gmail.com'), ('clancyshane4@gmail.com'), ('ecom.aiden7@gmail.com') on conflict do nothing;
 
 -- ---------- profiles ----------
 create table if not exists public.profiles (
