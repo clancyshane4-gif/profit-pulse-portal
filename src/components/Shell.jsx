@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import OnboardingGate from '../pages/OnboardingGate'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../App'
 import Avatar from './Avatar'
@@ -21,13 +23,14 @@ const ICON = {
 const NAV = [
   ['/', 'Dashboard', 'dashboard'], ['/courses', 'Courses', 'courses'], ['/recordings', 'Recordings', 'recordings'], ['/schedule', 'Schedule', 'schedule'],
   ['/challenge', 'Challenge', 'challenge'], ['/leaderboard', 'Leaderboard', 'leaderboard'], ['/map', 'Map', 'map'],
-  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/affiliate', 'Affiliate Tools', 'affiliate'], ['/onboarding', 'Onboarding', 'onboarding'],
+  ['/achievements', 'Achievements', 'achievements'], ['/resources', 'Resources', 'resources'], ['/affiliate', 'Affiliate Tools', 'affiliate'],
 ]
 
 export default function Shell({ children }) {
   const { profile, isAdmin, isStaff, settings, realAdmin, previewStudent, togglePreview } = useApp()
   const nav = useNavigate(); const loc = useLocation()
-  const items = [...NAV, ...(isStaff ? [['/rep', 'Rep panel', 'rep']] : []), ...(isAdmin ? [['/admin', 'Admin', 'admin']] : [])]
+  const items = [...NAV, ...(isStaff ? [['/onboarding', 'Onboarding', 'onboarding'], ['/rep', 'Rep panel', 'rep']] : []), ...(isAdmin ? [['/admin', 'Admin', 'admin']] : [])]
+  const [editMe, setEditMe] = useState(false)
   const Brand = () => (
     <div className="brand"><div className="mark"><img src="/logo-mark.png" alt="" /></div><div><b>Profit Pulse AI</b><small>Student Portal</small></div></div>
   )
@@ -43,8 +46,9 @@ export default function Shell({ children }) {
           ))}
         </nav>
         {realAdmin && <button className={`preview-toggle ${previewStudent ? 'on' : ''}`} onClick={togglePreview} title="See the portal exactly as a student does: locks, hidden phases, no admin tabs">{previewStudent ? '👁 Viewing as student · switch back' : '👁 View as student'}</button>}
+        {editMe && <OnboardingGate edit onClose={() => setEditMe(false)} />}
         <div className="me">
-          <Avatar name={profile.name} url={profile.photo_url} />
+          <button className="avatar-btn" title="Edit your photo and profile" onClick={() => setEditMe(true)}><Avatar name={profile.name} url={profile.photo_url} /></button>
           <div style={{ minWidth: 0, flex: 1 }}><b>{profile.name || 'Member'}</b><small>{{ student: 'Student', setter: 'Rep', coach: 'Coach', admin: 'Admin' }[profile.role] || profile.role}</small></div>
           <button className="btn sm" title="Sign out" style={{ padding: '6px 8px' }} onClick={() => supabase.auth.signOut()}>Out</button>
         </div>
