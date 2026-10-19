@@ -510,3 +510,37 @@ code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.07);pad
 .rail{position:relative;z-index:2}
 @media (max-width:960px){.pulse{left:0;width:100%}.aurora{filter:blur(60px)}}
 @media (prefers-reduced-motion:reduce){.aurora,.pulse path{animation:none}}
+
+/* ---------- phone pass (nothing here touches desktop) ---------- */
+.agenda{display:none}
+@media (max-width:760px){
+  /* schedule: list instead of the 7-column grid */
+  .cal{display:none}
+  .agenda{display:flex;flex-direction:column;gap:10px}
+  .ag{display:flex;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);border-left:3px solid var(--c);background:var(--glass);cursor:pointer}
+  .ag.past{opacity:.55}.ag.live{border-color:rgba(239,68,68,.45);background:linear-gradient(90deg,rgba(239,68,68,.12),var(--glass))}
+  .ag-day{width:40px;flex:0 0 auto;text-align:center}.ag-day small{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ag-day b{display:block;font-family:var(--display);font-size:20px;line-height:1.1}
+  /* popups: one at a time, compact, under the top bar */
+  .popstack{top:auto;bottom:14px;right:72px;left:12px;width:auto;gap:0}
+  .popstack .ann:not(:first-child){display:none}
+  .popstack .ann{padding:10px 36px 10px 12px;border-radius:12px}
+  .popstack .ann-title{font-size:13.5px;margin-bottom:2px;padding-right:0}
+  .popstack .ann-body{display:none}
+  .popstack .ann-eyebrow{font-size:10px;margin-bottom:2px}
+  .popstack .ann .row{margin-top:6px!important;gap:6px!important}
+  .popstack .ann .btn{padding:5px 10px;font-size:12px;border-radius:9px}
+  .popstack .medal.pop{width:30px;height:30px;font-size:15px;border-radius:9px}
+  .popstack .ann-x{top:6px;right:8px}
+  /* dashboard hero: three stats in one row */
+  .hero-side{flex-direction:row;gap:8px}
+  .stat-chip{flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:6px;padding:10px}
+  .stat-chip .ic{width:30px;height:30px;font-size:14px}
+  .stat-chip b{font-size:17px}.stat-chip small{font-size:10.5px;white-space:normal;line-height:1.2}
+  .dash-hero .pts{font-size:56px}
+  .dash-hero h1{font-size:24px!important}
+  .challenge-tag{font-size:10.5px;padding:4px 9px}
+  .support-fab{width:46px;height:46px;font-size:20px;right:14px;bottom:14px}
+  .support-panel{right:10px;left:10px;width:auto;bottom:70px;height:min(520px,calc(100vh - 90px))}
+  .wins-row{gap:8px}.win{min-width:230px}
+  .backdrop .pulse{display:none}
+}

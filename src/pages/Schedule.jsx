@@ -35,6 +35,20 @@ export default function Schedule() {
     <section className="page" onClick={() => setOpen(null)}>
       <div className="head"><div><h1>Call Schedule</h1><p>Times shown in your timezone <span className="note">({tz})</span>. Click a call for details and the join link.</p></div>
         <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => setOffset(0)}>This week</button><button className="btn sm" onClick={() => setOffset(o => o - 1)}>‹</button><span className="num" style={{ minWidth: 170, textAlign: 'center', fontWeight: 600 }}>{fmtRange()}</span><button className="btn sm" onClick={() => setOffset(o => o + 1)}>›</button></div></div>
+      {/* phone view: this week as a list */}
+      <div className="agenda">
+        {[...items].sort((a, b) => a.start - b.start).map(i => { const past = i.end < now; const live = i.start <= now && i.end > now; const isOpen = open?.ev.id === i.ev.id; return (
+          <div key={i.ev.id} className={`ag ${past ? 'past' : ''} ${live ? 'live' : ''}`} style={{ '--c': i.ev.color }} onClick={e => { e.stopPropagation(); setOpen(isOpen ? null : i) }}>
+            <div className="ag-day"><small>{DAYS[i.start.getDay()]}</small><b>{i.start.getDate()}</b></div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <b style={{ color: 'var(--c)' }}>{i.ev.title}</b>{live && <span className="pill" style={{ marginLeft: 8, color: '#ff6b6b', borderColor: 'rgba(239,68,68,.4)' }}>Live now</span>}
+              <div className="note">{fmtTime(i.start)} – {fmtTime(i.end)} · {i.ev.coach}</div>
+              {isOpen && <div style={{ marginTop: 8 }}><p className="muted" style={{ fontSize: 13, margin: '0 0 10px' }}>{i.ev.description}</p>{(i.ev.join_url || defaultJoin) ? <a className="btn sm primary meet" href={i.ev.join_url || defaultJoin} target="_blank" rel="noopener"><MeetIcon /> Join on Google Meet</a> : <span className="note">Google Meet link coming</span>}</div>}
+            </div>
+            <span className="note" style={{ alignSelf: 'center' }}>{isOpen ? '▴' : '▾'}</span>
+          </div>) })}
+        {!items.length && <div className="note">No calls this week.</div>}
+      </div>
       <div className="cal">
         <div className="cal-head"><div /> {DAYS.map((d, i) => { const dt = new Date(weekStart); dt.setDate(dt.getDate() + i); const today = dt.toDateString() === now.toDateString(); return <div key={d} className={today ? 'today' : ''}><small>{d}</small><b>{dt.getDate()}</b></div> })}</div>
         <div className="cal-body" style={{ height: hours.length * PX }}>
